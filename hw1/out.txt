@@ -1,9 +1,0 @@
-Quadratic Solver, version v2.0e-jc
-Equation to be solved:  2x^2 + 2392.2x + -766267 = 0
-The quadratic has real roots:  -1458.745850 and 262.645874
-Quadratic Solver, version v2.0e-jc
-Equation to be solved:  1x^2 + -1x + 1 = 0
-The quadratic has complex roots:  0.500000 +/- j0.866025
-Quadratic Solver, version v2.0e-jc
-Equation to be solved:  0x^2 + 1x + -10 = 0
-The quadratic has real roots:  -inf and -nan
