@@ -1,0 +1,21 @@
+total 44
+drwx------ 9 cnl9674 domain users 4096 Aug 29 13:11 .
+drwxr-xr-x 5 root    root            0 Aug 29 12:55 ..
+-rw------- 1 cnl9674 student       315 Aug 29 13:08 .bash_history
+-rw-r--r-- 1 cnl9674 domain users   18 Aug 23  2016 .bash_logout
+-rw-r--r-- 1 cnl9674 domain users  176 Aug 23  2016 .bash_profile
+-rw-r--r-- 1 cnl9674 domain users  245 Aug 29 13:11 .bashrc
+drwxrwx--- 3 cnl9674 student        26 Aug 28 16:16 .cache
+drwxrwx--- 3 cnl9674 student        26 Aug 28 16:16 .config
+-rw-r--r-- 1 root    root         2479 Oct  3  2017 .foldersize.txt.epoch
+-rw-rw---- 1 cnl9674 student         0 Aug 29 13:11 hidden.txt
+drwxrwx--- 2 cnl9674 student        37 Aug 29 13:08 hw1
+drwxrwx--- 3 cnl9674 student        28 Aug 29 13:09 .matlab
+-rw-rw---- 1 cnl9674 student      2712 Aug 29 13:09 matlab_crash_dump.23292-1
+-rw-rw---- 1 cnl9674 student      2712 Aug 29 13:09 matlab_crash_dump.23425-1
+drwxrwx--- 2 cnl9674 student        48 Aug 29 13:09 .oracle_jre_usage
+drwxrwx--- 3 cnl9674 student        30 Aug 28 16:28 src
+drwx------ 2 cnl9674 student       100 Aug 29 12:58 .ssh
+-rw------- 1 cnl9674 student      1218 Aug 29 13:11 .viminfo
+-rw-rw---- 1 cnl9674 student        50 Aug 29 13:08 .vimrc
+-rw------- 1 cnl9674 student        57 Aug 29 13:08 .Xauthority

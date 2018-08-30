@@ -1,0 +1,8 @@
+QuadraticSolver.c
+
+The first two equations that were passed into QuadraticSolver produced
+the expected output. The third equation that was passed into QuadraticSolver
+produced an unexpected error. This was due to the fact that the coefficient
+for the x^2 term was a zero. The way the roots are calculated does not take
+into account the possibility of one of the parameters being set to zero. This
+caused the roots to be printed as "inf" and "nan".
