@@ -1,7 +1,7 @@
 CC=gcc
 VALGRIND=valgrind
 ECHO=echo -e
-VALGRIND_OPTS=--tool=memcheck --leak-check=yes --track-origins=yes
+VALGRIND_FLAGS=--tool=memcheck --leak-check=yes --track-origins=yes
 QS_EXEC=qs
 VAL_EXEC=val
 TEST_OUT=out.txt
@@ -18,13 +18,14 @@ test: all
 	cat $(TEST_OUT)
 
 mem1: all
-	$(VALGRIND) $(VALGRIND_OPTS) ./$(QS_EXEC) 2 2392.2 -766267.2 > $(MEM_OUT) 2>&1
+	$(VALGRIND) $(VALGRIND_FLAGS) ./$(QS_EXEC) 2 2392.2 -766267.2 > $(MEM_OUT) 2>&1
 	cat $(MEM_OUT)
 
 mem2: all
 	$(VALGRIND) ./$(VAL_EXEC) > $(MEM_OUT) 2>&1
 	cat $(MEM_OUT)
 
+.PHONY: help
 help:
 	@$(ECHO)	'Makefile targets:'
 	@$(ECHO) '\tall: build QuadraticSolver.c and val.c'
@@ -34,5 +35,6 @@ help:
 	@$(ECHO) '\thelp: display this dialog'
 	@$(ECHO) '\tclean: remove all temporary and intermediate files'
 
+.PHONY: clean
 clean:
 	$(RM) $(QS_EXEC) $(VAL_EXEC) $(TEST_OUT) $(MEM_OUT)
