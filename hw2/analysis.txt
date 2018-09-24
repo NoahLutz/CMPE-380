@@ -1,0 +1,8 @@
+Running debugTst divide through gdb and using the run command, it was 
+found that the program crashed on line 24 of debugTst.c. Setting a 
+breakpoint for line 24, re-running the debug session and printing the 
+variables using the info locals command, it was found that number had the 
+value of 100. Running debugTst through valgrind with leak check enabled, 
+it was found that debugTst leaks 2048 bytes with the memory argument. 
+When re-run using the "good" argument, 0 bytes were in use at the time 
+that the program stoped running. 
