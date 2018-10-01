@@ -25,5 +25,10 @@ After the array is done being used, it is destroyed using the
 DestroyDArray function, which resets the DArray object values to zero
 and frees the previously malloc'ed memory.
 
+If while reading the input file, a line longer than 255 bytes is found,
+a warning is printed to stderr and the line is ignored by advancing the
+file pointer to the next line. This is done using a while loop and
+looping until the newline char is found.
+
 When the unit test was run through valgrind, it showed that all blocks of
 memory that were allocated were freed. 

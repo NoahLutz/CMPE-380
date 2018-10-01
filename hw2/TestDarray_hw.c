@@ -141,7 +141,8 @@ int main(int argc, char* argv[])
       /* Insert code here to make sure the input data is not too long
           hint:  use strlen(String)   */
 		if (strlen(String) > MAX_STR_LEN){
-			fprintf(stderr, "String %s longer than 255 bytes, ignoring", String);
+			fprintf(stderr, "String %s longer than 255 bytes, ignoring\n", String);
+			while(fgetc(InputFile) != '\n');		// Advance file pointer to next line
 			continue;
 		}
     	TempData.Num = lcv++;
