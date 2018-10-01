@@ -6,3 +6,24 @@ value of 100. Running debugTst through valgrind with leak check enabled,
 it was found that debugTst leaks 2048 bytes with the memory argument. 
 When re-run using the "good" argument, 0 bytes were in use at the time 
 that the program stoped running. 
+
+The DynamicArrays module, initializes the dynamic array by default with
+a size of zero and the payload pointer pointing to NULL. If the InitialSize
+argument is greater than zero, then the proper sized array is allocated,
+and all variables set to appropriate values. When items are added to the
+array, a check is done to see if the array has space left to add another
+item. If there is, then the item is added and the EntriesUsed value is
+incremented. If there isn't enough space, then the array is grown by the
+value in GROWTH_AMOUNT using realloc. If any errors are encounterd during
+mallocs or reallocs, then a message is printed to stderr and the
+appropriate error code is returned. The unit test created a DynamicArray
+object and passed it to CreateDArray to initialize it with a size of 100.
+The file that is passed in is open and read and all the words are added
+to the dynamic array. After all the elements have been read, the first
+and last six are printed, as well as the total number of elements. 
+After the array is done being used, it is destroyed using the
+DestroyDArray function, which resets the DArray object values to zero
+and frees the previously malloc'ed memory.
+
+When the unit test was run through valgrind, it showed that all blocks of
+memory that were allocated were freed. 
