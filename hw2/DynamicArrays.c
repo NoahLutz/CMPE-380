@@ -19,6 +19,11 @@
 #include "ClassErrors.h"
 #include "DynamicArrays.h"
 
+
+#define MALLOC_ERR_MSG 		"Failed to allocate memory for array"
+
+#define REALLOC_ERR_MSG		"Failed to reallocate memory for array"
+
 /***************************************************************************
  CreateDArray -- Allocates memory and initializes DArray state             
         void CreateDArray(DArray *DArrayHead, unsigned int InitialSize)
@@ -44,11 +49,12 @@ void CreateDArray(DArray *DArrayHead, unsigned int InitialSize) {
 	DArrayHead->EntriesUsed = 0;
 	DArrayHead->Payload = NULL;
 
-	if (InitalSize > 0) {
+	if (InitialSize > 0) {
 		DArrayHead->Capacity = InitialSize;
-		DArrayHead->Payload = (Data *) malloc(InitialSize);
+		DArrayHead->Payload = (Data *) malloc(InitialSize * sizeof(Data));
 		if (DArrayHead->Payload == NULL) {
-  			//TODO: print to stderr
+			fprintf(stderr, "%s", MALLOC_ERR_MSG);
+			exit(MALLOC_ERROR);
 		}
 	}
 } /* CreateDArray() */
@@ -79,8 +85,19 @@ unsigned int PushToDArray(DArray *DArrayHead, Data *PayloadPtr)
     Increment the number of elements used in Darray header 
     Return the array index of last element inserted 
    ************************************************************************/
- 
+	if (DArrayHead->EntriesUsed == DArrayHead->Capacity){
+		DArrayHead->Payload = realloc(DArrayHead->Payload, sizeof(Data) * (DArrayHead->Capacity + GROWTH_AMOUNT));
+		DArrayHead->Capacity += GROWTH_AMOUNT;
+		if (DArrayHead->Payload == NULL){
+			fprintf(stderr, "Error: %s", REALLOC_ERR_MSG);
+			exit(REALLOC_ERROR);
+		}
+	}
+	Data* nextEntry = (Data*) (DArrayHead->Payload + (DArrayHead->EntriesUsed));
 
+	*nextEntry = *PayloadPtr;
+
+	return ++DArrayHead->EntriesUsed;
 } /* PushToDArray() */
 
 
@@ -102,5 +119,7 @@ void DestroyDArray(DArray *DArrayHead)
     Set the capacity to zero in Darray header
     De-allocate the storage for the array elements 
  *************************************************************************/
- 
+ 	DArrayHead->Capacity=0;
+	DArrayHead->EntriesUsed=0;
+	free(DArrayHead->Payload);
 } /* DestroyDArray() */

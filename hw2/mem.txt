@@ -1,0 +1,31 @@
+==18704== Memcheck, a memory error detector
+==18704== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==18704== Using Valgrind-3.14.0.GIT and LibVEX; rerun with -h for copyright info
+==18704== Command: ./TestDArray us-eng-words.txt
+==18704== 
+First 6 entries:
+Word #0: dermatitis
+Word #1: toxins
+Word #2: wisted
+Word #3: benedictions
+Word #4: Tera
+Word #5: petrochemistry's
+
+Last 6 entries:
+Word #206584: harken
+Word #206585: Pict's
+Word #206586: Sidman's
+Word #206587: intercohort
+Word #206588: pressurize
+Word #206589: besotting
+
+Number of entries: 206590
+==18704== 
+==18704== HEAP SUMMARY:
+==18704==     in use at exit: 0 bytes in 0 blocks
+==18704==   total heap usage: 2,060 allocs, 2,060 frees, 55,514,324,744 bytes allocated
+==18704== 
+==18704== All heap blocks were freed -- no leaks are possible
+==18704== 
+==18704== For counts of detected and suppressed errors, rerun with: -v
+==18704== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

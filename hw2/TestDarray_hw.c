@@ -13,6 +13,12 @@
 #include "ClassErrors.h"
 #include "DynamicArrays.h"
 
+#define PGM_USAGE ("Usage:\n\
+  Reads infile and adds all words to a dynamic array and then prints the first six and last six words.\n\n\
+  ./TestDArray infile\n\
+    infile - file to read\n")
+		
+
 /* Initial Size of Dynamic Array */
 #define INITIAL_SIZE (1000)
 
@@ -35,7 +41,7 @@
 int main(int argc, char* argv[])
   {
   /* declare local variables */
-   int ErrorCode = 0;               /* Application error code - 0 is OK */
+   int ErrorCode = PGM_SUCCESS;             /* Application error code - 0 is OK */
    DArray TestDynamicArray = { 0, 0, NULL}; /* Dynamic Array for Data */
    FILE *DataFile = NULL;           /* Pointer to Data file name (from cmd line) */
    int lcv;                         /* Loop Control Variable */
@@ -61,18 +67,44 @@ int main(int argc, char* argv[])
          De-allocate the dynamic array 
         ********************************************************************/
          /* WRITE YOUR CODE HERE */
- 
+ 			CreateDArray(&TestDynamicArray, INITIAL_SIZE);
+
+			ReadData(DataFile, &TestDynamicArray);
+
+			fclose(DataFile);
+
+			fprintf(stdout, "First 6 entries:\n");
+			for (lcv = 0; lcv < 6; lcv++) {
+				fprintf(stdout, "Word #%d: %s\n", lcv, 
+						(TestDynamicArray.Payload + lcv)->String);
+			}
+			
+			fprintf(stdout, "\nLast 6 entries:\n");
+			int numEntries = TestDynamicArray.EntriesUsed;
+			for (lcv = numEntries-6; lcv< numEntries; lcv++){
+				fprintf(stdout, "Word #%d: %s\n", lcv, 
+						(TestDynamicArray.Payload + lcv)->String);
+			}
+			
+			fprintf(stdout, "\nNumber of entries: %d\n", 
+					TestDynamicArray.EntriesUsed);
+
+			DestroyDArray(&TestDynamicArray);
         } /* if() */
       else
         {
          /* WRITE YOUR CODE HERE */
          /* Print error messages */
+			fprintf(stderr, "Error: Failed to open \"%s\" for reading\n", argv[1]);
+			ErrorCode = PGM_FILE_NOT_FOUND;
         } /* if...else() */
      } /* if() */
    else
      {
       /* WRITE YOUR CODE HERE    */
       /* Print usage information */
+		 fprintf(stderr, PGM_USAGE);
+		 ErrorCode = PGM_SYNTAX_ERROR;
      } /* if...else() */
 
    return ErrorCode;
@@ -108,9 +140,12 @@ int main(int argc, char* argv[])
      {
       /* Insert code here to make sure the input data is not too long
           hint:  use strlen(String)   */
-
-      TempData.Num = lcv++;
-      strncpy(TempData.String, String, MAX_STR_LEN);
-      PushToDArray(DynamicArrayPtr, &TempData);
+		if (strlen(String) > MAX_STR_LEN){
+			fprintf(stderr, "String %s longer than 255 bytes, ignoring", String);
+			continue;
+		}
+    	TempData.Num = lcv++;
+      	strncpy(TempData.String, String, MAX_STR_LEN);
+      	PushToDArray(DynamicArrayPtr, &TempData);
      } /* while() */
   } /* ReadData() */
