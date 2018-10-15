@@ -16,24 +16,73 @@
 #include <stdio.h>
 #include <time.h>
 
-    struct timmerDetails {                                                    
-      clock_t Start;    /* Start Time   - set when the timer is started */
-      clock_t Stop;     /* Stop Time    - set when the timer is stopped */
-      clock_t Elapsed;  /* Elapsed Time - Accumulated when the timer is stopped */
-      int State;        /* Timer State  - 0=stopped / 1=running */
-    }; /* Elapsed Time and State must be initialized to zero */
-
-  #define DECLARE_TIMER(A)                                                    \
-    struct timmerDetails                                                      \
-     A = /* Elapsed Time and State must be initialized to zero */             \
-      {                                                                       \
-      /* Start   = */ 0,                                                      \
-      /* Stop    = */ 0,                                                      \
-      /* Elapsed = */ 0,                                                      \
-      /* State   = */ 0,                                                      \
-      }; /* Timer has been declared and defined,   ;  IS required */
+struct timmerDetails {                                                    
+    clock_t Start;    /* Start Time   - set when the timer is started */
+    clock_t Stop;     /* Stop Time    - set when the timer is stopped */
+    clock_t Elapsed;  /* Elapsed Time - Accumulated when the timer is stopped */
+	int State;        /* Timer State  - 0=stopped / 1=running */
+}; /* Elapsed Time and State must be initialized to zero */
+#ifdef EN_TIME
+	#define DECLARE_TIMER(A)                                                    \
+		struct timmerDetails                                                    \
+    		A = /* Elapsed Time and State must be initialized to zero */        \
+			{                                                                   \
+      		/* Start   = */ 0,                                                  \
+      		/* Stop    = */ 0,                                                  \
+			/* Elapsed = */ 0,                                                  \
+			/* State   = */ 0,                                                  \
+			}; /* Timer has been declared and defined,   ;  IS required */
       
-/* Write the timing macros here */
+	/* Write the timing macros here */
+	#define START_TIMER(A){														\
+		if (1 == A.State){														\
+			fprintf(stderr, "Error, running timer "#A" started.\n");			\
+		}																		\
+		A.State = 1; /* Set the clock state to running */						\
+		A.Start = clock(); /* Set the start time */								\
+	} /* START_TIMER() */
 
+	#define RESTART_TIMER(A){													\
+		A.Elapsed = 0;	/* Reset elapsed time */								\
+	} /* RESTART_TIMER() */
+
+	#define STOP_TIMER(A){														\
+		A.Stop = clock();	/* Set the stop time */								\
+		if (0 == A.State){														\
+			fprintf(stderr, "Error, stopped timer "#A" stopped again,\n");		\
+		}																		\
+		else{																	\
+			A.Elapsed += A.Stop - A.Start;										\
+		}																		\
+		A.State = 0; /* Set state to stopped */									\
+	} /* STOP_TIMER() */
+
+	#define PRINT_TIMER(A){														\
+		if (1 == A.State){														\
+			STOP_TIMER(A); /* If running, stop timer */							\
+		}																		\
+		fprintf(stderr, "Elapsed CPU Time ("#A") = %g sec.\n", 					\
+				(double)A.Elapsed / (double)CLOCKS_PER_SEC);					\
+	} /* PRINT_TIMER() */
+
+	#define PRINT_RTIMER(A,R){													\
+		if (1 == A.State){														\
+			STOP_TIMER(A); /* If running, stop timer */							\
+		}																		\
+		fprintf(stderr, "Elapsed CPU Time per iteration ("#A") = %g sec.\n",	\
+				((double)A.Elapsed / (double)CLOCKS_PER_SEC) / (double)R);		\
+	} /* PRINT_RTIMER() */
+
+#else
+	/* Null macro defines */
+
+	#define DECLARE_TIMER(A)
+	#define START_TIMER(A)
+	#define RESTART_TIMER(A)
+	#define STOP_TIMER(A)
+	#define PRINT_TIMER(A)
+	#define PRINT_RTIMER(A,R)
+
+#endif /* EN_TIME */
 
 #endif /* _TIMERS_H_ */
