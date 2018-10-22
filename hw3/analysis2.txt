@@ -1,0 +1,28 @@
+In order to optimize the program given in hw3c.c, a few different methods
+were used. The first was to optimize the data processing. 
+
+I noticed that when data points were being added, the size of the dynamic
+array was being checked and, if too small, was being expanded by one data
+point by mallocing two new arrays, copying over the data, then freeing 
+the original arrays. The first thing that I changed was to use realloc 
+instead of using malloc to create new arrays. This was more time efficient
+because instead of having to copy all the data over manually, the compiler
+was able to take care of it. This also has the added benefit of making the
+code more readable. 
+
+The second thing I did was to change the amount the dynamic array grew by,
+since the way it was written, whenever the original array size became too
+small and needed to grow, it would increase it by one and then copy all
+data over for every data point afterwards. I added a GROW_AMMT define set
+to 100 that would increase the dynamic array size by that ammount so
+the reallocing of data would happen far less often. 
+
+The last optimization I did was to use the compiler flag -Ofast. This flag
+turns on optimization level 3 as well as the option -ffast-math. This
+showed a significant increase to both the calculation time and the data
+input times. 
+
+With all optimizations, the time it took to read all the data decreased
+from ~<44>ms to ~<17>ms and the calculation time decreased from <31>us to
+<3.9>us. Because I chose to optimize for time, the size of the optimized
+program compared to the unoptimized program increased.

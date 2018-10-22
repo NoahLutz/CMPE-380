@@ -69,9 +69,15 @@ struct timmerDetails {
 		if (1 == A.State){														\
 			STOP_TIMER(A); /* If running, stop timer */							\
 		}																		\
-		fprintf(stderr, "Elapsed CPU Time per iteration ("#A") = %g sec.\n",	\
-				((double)A.Elapsed / (double)CLOCKS_PER_SEC) / (double)R);		\
+		fprintf(stderr, "Avg Elapsed CPU Time Over %d iterations ("#A") = %g sec.\n", R, ((double)A.Elapsed / (double)CLOCKS_PER_SEC) / (double)R);					\
 	} /* PRINT_RTIMER() */
+	
+	#define DECLARE_REPEAT_VAR(V) int _timer_##V = 0
+
+	#define BEGIN_REPEAT_TIMING(R,V){											\
+		for(_timer_##V = 0; _timer_##V < R; _timer_##V++){
+	
+	#define END_REPEAT_TIMING }}
 
 #else
 	/* Null macro defines */
@@ -82,6 +88,9 @@ struct timmerDetails {
 	#define STOP_TIMER(A)
 	#define PRINT_TIMER(A)
 	#define PRINT_RTIMER(A,R)
+	#define DECLARE_REPEAT_VAR(V)
+	#define BEGIN_REPEAT_TIMING(R,V)
+	#define END_REPEAT_TIMING
 
 #endif /* EN_TIME */
 

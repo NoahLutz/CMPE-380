@@ -13,7 +13,9 @@
 using namespace std;
 #include <iostream>
 // add other include files as necessary
+#include "Timers.h"
 
+#define NUM_ITERATIONS  100
 //////////////////////////////////////////////////////////////////////////////
 // Class declaration for determining the "best" line for a given set of X-Y
 // data points.
@@ -168,89 +170,94 @@ double LinearFit::GetLinearCoefficient(void)
 //////////////////////////////////////////////////////////////////////////////
 int main(int argc, char *argv[])
   {
-   // Declare a pointer to the LinearFit object
-   LinearFit *DataSet;
+	// Declare a pointer to the LinearFit object
+	LinearFit *DataSet;
 
 
 
 
+	// Check that a command line argument was provided
+	if (1 != argc) {
+
+
+		// Boolean variable to indicate all data has been read.
+		bool Done;
+		
+		// Declare an input stream
+		ifstream InputFile;
+		
+		// Variables to hold the constant and linear coefficients of the line
+		double A, B;
+
+
+		DECLARE_TIMER(data);
+		DECLARE_TIMER(calculation);
+
+		DECLARE_REPEAT_VAR(var);
+		BEGIN_REPEAT_TIMING(NUM_ITERATIONS, var)
+
+		START_TIMER(data);
 
 
 
-   // Check that a command line argument was provided
-   if (1 != argc)
-     {
-      // Boolean variable to indicate all data has been read.
-      bool Done;
+		// Attach the input stream to the command line argument (it should be a
+		// filename).
+		InputFile.open(argv[1]);
 
-      // Declare an input stream
-      ifstream InputFile;
+		// Instantiate and object for determining the line
+		DataSet = new LinearFit;
 
-      // Variables to hold the constant and linear coefficients of the line
-      double A, B;
-
-
-
-
-
-
-
-      // Attach the input stream to the command line argument (it should be a
-      // filename).
-      InputFile.open(argv[1]);
-
-      // Instantiate and object for determining the line
-      DataSet = new LinearFit;
-
-      // Read all of the data from the file
-      do
-        {
-         // Temporary variables to hold data read from file
-         double X, Y;
+		// Read all of the data from the file
+		do {
+			// Temporary variables to hold data read from file
+			double X, Y;
    
-         // Read the X-Y data point
-         InputFile >> X >> Y;
+			// Read the X-Y data point
+			InputFile >> X >> Y;
    
-         // If read did not go beyond end-of-file, add it to the data set
-         if (!InputFile.eof()) 
-           {
-            // Add the data point
-            DataSet->AddPoint(X, Y);
-            Done = false;
-           } // if()
-         else
-           {
-            // Set the flag indicating that all the data is gone
-            Done = true;
-           } // if...else()
-        } while (!Done);
+			// If read did not go beyond end-of-file, add it to the data set
+			if (!InputFile.eof()) {
+				// Add the data point
+            	DataSet->AddPoint(X, Y);
+            	Done = false;
+           	} // if()
+        	else {
+            	// Set the flag indicating that all the data is gone
+            	Done = true;
+           	} // if...else()
+		} while (!Done);
+		
+		STOP_TIMER(data);
+		
+		START_TIMER(calculation);
 
-      // Save the constant value and the linear coefficient
-      A = DataSet->GetLinearCoefficient();
-      B = DataSet->GetConstant();
+    	// Save the constant value and the linear coefficient
+      	A = DataSet->GetLinearCoefficient();
+      	B = DataSet->GetConstant();
+		
+		STOP_TIMER(calculation);
 
-      // Destroy the data set object
-      delete DataSet;
+      	// Destroy the data set object
+      	delete DataSet;
       
-      // Disconnect the input file from the stream
-      InputFile.close();
-      InputFile.clear();
+      	// Disconnect the input file from the stream
+      	InputFile.close();
+      	InputFile.clear();
 
-
-
+		
+		END_REPEAT_TIMING
+		PRINT_RTIMER(data, NUM_ITERATIONS);
+		PRINT_RTIMER(calculation, NUM_ITERATIONS);
       
-      // Print out the line that fits the data set.
-      cout << "The best least squares line is: Y = " << A << " * X + " << B << endl;
+      	// Print out the line that fits the data set.
+      	cout << "The best least squares line is: Y = " << A << " * X + " << B << endl;
 
+    } // if (1 == argc)
+   	else { 
+    	// Display program usage information
+    	cout << "Fits a line to data points" << endl;
+    	cout << "(C++ Version) Usage: " << argv[0] << " Filename" << endl;
+    } // if...else()
 
-
-     } // if (1 == argc)
-   else
-     { 
-      // Display program usage information
-      cout << "Fits a line to data points" << endl;
-      cout << "(C++ Version) Usage: " << argv[0] << " Filename" << endl;
-     } // if...else()
-
-   return 0; // reminiscent of C !!
-  } // main()
+   	return 0; // reminiscent of C !!
+} // main()

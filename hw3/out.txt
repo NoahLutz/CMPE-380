@@ -1,0 +1,15 @@
+hw3c_c:
+
+Avg Elapsed CPU Time Over 100 iterations (data) = 0.0446692 sec.
+Avg Elapsed CPU Time Over 100 iterations (calculation) = 3.1e-05 sec.
+The best least square line is: Y = 1.26393 * X + 0.823035
+hw3c_cpp:
+
+Avg Elapsed CPU Time Over 100 iterations (data) = 0.00374649 sec.
+Avg Elapsed CPU Time Over 100 iterations (calculation) = 0.00046228 sec.
+The best least squares line is: Y = 1.26393 * X + 0.823035
+hw3opt:
+
+Avg Elapsed CPU Time Over 100 iterations (data) = 0.00174891 sec.
+Avg Elapsed CPU Time Over 100 iterations (calculation) = 3.9e-06 sec.
+The best least square line is: Y = 1.26393 * X + 0.823035

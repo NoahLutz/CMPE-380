@@ -14,13 +14,15 @@
 #include "Timers.h"  
 
 #define NUM_ITERATIONS	100
+#define GROW_AMMT		100
+
 /* structure to hold header of dynamic array */
 typedef struct {
-   double *Data_X;      /* Pointer to X data dynamic array */
-   double *Data_Y;      /* Pointer to X data dynamic array */
-   int Size;            /* Current Size of dynamic arrays */
-   int NextElement;     /* Index of element next to last used entry in the arrays */
-  } LinearFit;
+	double *Data_X;      /* Pointer to X data dynamic array */
+	double *Data_Y;      /* Pointer to Y data dynamic array */
+	int Size;            /* Current Size of dynamic arrays */
+	int NextElement;     /* Index of element next to last used entry in the arrays */
+} LinearFit;
  
 /* Function prototypes */ 
 void CalculateCoefficients(LinearFit *DataSet, double *A, double *B);
@@ -124,49 +126,28 @@ int main(int argc, char *argv[]){
 * AddPoint() - Accepts a single point and appends it to the array expanding
 *              the size of the arrays if necessary.
 **************************************************************************/
-void AddPoint(LinearFit *DataSet, double X, double Y)
-  {
-  int tmp_old_size; /* temp variable to store size when full */
-   /* Store the data point (X,Y) into the arrays */
-   DataSet->Data_X[DataSet->NextElement] = X;
-   DataSet->Data_Y[DataSet->NextElement] = Y;
+void AddPoint(LinearFit *DataSet, double X, double Y){
+	/* Store the data point (X,Y) into the arrays */
+	DataSet->Data_X[DataSet->NextElement] = X;
+	DataSet->Data_Y[DataSet->NextElement] = Y;
  
-   /* Increment index for the next point and see if that point will be */
-   /* beyond the size of the arrays */
-   if (++DataSet->NextElement >= DataSet->Size)
-     {
-      /* Increase the size of the arrays by 1 */
-      tmp_old_size = DataSet->Size;
-      DataSet->Size += 1;
+	/* Increment index for the next point and see if that point will be */
+	/* beyond the size of the arrays */
+	if (++DataSet->NextElement >= DataSet->Size){
+    	/* Increase the size of the arrays by GROW_AMMT */
+    	DataSet->Size += GROW_AMMT;
  
-      /* Declare AND allocate new (larger) arrays for the additional data */
-      double *NewData_X = (double *)malloc(sizeof(double) * DataSet->Size);
-      double *NewData_Y = (double *)malloc(sizeof(double) * DataSet->Size);
+    	/* Declare AND allocate new (larger) arrays for the additional data */
+    	DataSet->Data_X = (double *)realloc(DataSet->Data_X ,sizeof(double) * DataSet->Size);
+    	DataSet->Data_Y = (double *)realloc(DataSet->Data_Y, sizeof(double) * DataSet->Size);
       
-      /* Check for any errors */
-      if ((NULL == NewData_X) || (NULL == NewData_Y)) 
-         {
-          fprintf(stderr, "Error: Could not allocate memory at line %d\n", __LINE__);
-          exit(-99);
-         }
-      
-      /* Copy the existing data points to the new arrays */
-      int lcv;
-      for (lcv = 0; lcv < tmp_old_size ; lcv++)
-        {
-         NewData_X[lcv] = DataSet->Data_X[lcv];
-         NewData_Y[lcv] = DataSet->Data_Y[lcv];
-        } /* for() */
- 
-      /* De-allocate (return to heap) the old (smaller) arrays */
-      free(DataSet->Data_X);
-      free(DataSet->Data_Y);
- 
-      /* Point to the new arrays to be used from now on */
-      DataSet->Data_X = NewData_X;
-      DataSet->Data_Y = NewData_Y;
-     } /* if() */
-  } /* AddPoint() */
+    	/* Check for any errors */
+    	if ((NULL == DataSet->Data_X) || (NULL == DataSet->Data_Y)) {
+        	fprintf(stderr, "Error: Could not allocate memory at line %d\n", __LINE__);
+        	exit(-99);
+        }
+    } /* if() */
+} /* AddPoint() */
   
 
 /**************************************************************************

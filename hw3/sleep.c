@@ -15,11 +15,14 @@ int main() {
 	printf("Start\n");
    	/* Your macro stuff here */
 	DECLARE_TIMER(timer);
-	
+	START_TIMER(timer);
+
+	DECLARE_REPEAT_VAR(temp);
+	BEGIN_REPEAT_TIMING(2,temp)
+
    	/* wait for 60 seconds */
    	end_t = clock() + 60 * CLOCKS_PER_SEC;
-
-	START_TIMER(timer);
+	
    	while (end_t > clock()) {
 		/* Consume CPU time */
     	delay = 1<<19;
@@ -27,6 +30,7 @@ int main() {
 			delay--;
 		}
 	}
+	END_REPEAT_TIMING
 	/* more of your macro stuff */   
 	STOP_TIMER(timer);
 

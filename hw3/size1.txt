@@ -1,0 +1,61 @@
+hw3c_c  :
+section              size    addr
+.interp                28     680
+.note.ABI-tag          32     708
+.note.gnu.build-id     36     740
+.gnu.hash              36     776
+.dynsym               456     816
+.dynstr               241    1272
+.gnu.version           38    1514
+.gnu.version_r         64    1552
+.rela.dyn             216    1616
+.rela.plt             288    1832
+.init                  27    4096
+.plt                  208    4128
+.text                2469    4336
+.fini                  13    6808
+.rodata               560    8192
+.eh_frame_hdr          68    8752
+.eh_frame             280    8824
+.init_array             8   15848
+.fini_array             8   15856
+.dynamic              480   15864
+.got                   40   16344
+.got.plt              120   16384
+.data                  16   16504
+.bss                   16   16544
+.comment               26       0
+Total                5774
+
+
+hw3c_cpp  :
+section               size    addr
+.interp                 28     680
+.note.ABI-tag           32     708
+.note.gnu.build-id      36     740
+.gnu.hash               40     776
+.dynsym                792     816
+.dynstr                947    1608
+.gnu.version            66    2556
+.gnu.version_r         160    2624
+.rela.dyn              336    2784
+.rela.plt              528    3120
+.init                   27    4096
+.plt                   368    4128
+.text                 5269    4496
+.fini                   13    9768
+.rodata                464   12288
+.eh_frame_hdr          548   12752
+.eh_frame             2264   13304
+.gcc_except_table       52   15568
+.init_array             16   19872
+.fini_array              8   19888
+.dynamic               528   19896
+.got                    56   20424
+.got.plt               200   20480
+.data                   24   20680
+.bss                   304   20704
+.comment                26       0
+Total                13132
+
+
