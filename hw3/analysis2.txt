@@ -23,6 +23,6 @@ showed a significant increase to both the calculation time and the data
 input times. 
 
 With all optimizations, the time it took to read all the data decreased
-from ~<44>ms to ~<17>ms and the calculation time decreased from <31>us to
-<3.9>us. Because I chose to optimize for time, the size of the optimized
+from ~44ms to ~17ms and the calculation time decreased from 31us to
+3.9us. Because I chose to optimize for time, the size of the optimized
 program compared to the unoptimized program increased.

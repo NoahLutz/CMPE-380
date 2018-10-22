@@ -1,10 +1,10 @@
 To analyze the speed of the C an C++ program, the timing macros in Timers.h
 were used to see how much time each program took to load all data and then
 to compute the linear line of best fit. It was found that for the C program,
-it took around <44ms> on average to completley read and load the data for
-batch processing and <0.312ms> on average to calculate the coefficients for
-the line of best fit. For the C++ program, it took on average <3.69ms> to
-read all the data for batch processing and <0.459ms> on average to compute
+it took around 44ms on average to completley read and load the data for
+batch processing and 0.312ms on average to calculate the coefficients for
+the line of best fit. For the C++ program, it took on average 3.69ms to
+read all the data for batch processing and 0.459ms on average to compute
 the coefficients. The biggest diffence shows up in the ammount of time to
 read the file and load all the data. This is due to the fact that C++ has
 much better file I/O than C does. Also, the difference between the
