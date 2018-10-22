@@ -1,1 +1,1 @@
--rwxr-xr-x 1 noah users 18896 Oct 22 17:52 hw3opt
+-rwxrwx--- 1 cnl9674 student 14824 Oct 22 18:14 hw3opt
