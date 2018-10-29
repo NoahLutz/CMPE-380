@@ -9,10 +9,10 @@
 /******************************************************************************
 * Modify structure ElementStructs to suit your application
 ******************************************************************************/
-typedef struct 
-  {
-   /* Application Specific Definitions */
-  } ElementStructs;
+typedef struct {
+	int number;
+	char buffer[256];
+} ElementStructs;
 
 /**************  Nothing else in the module needs to be modified *************/
 
@@ -21,27 +21,25 @@ typedef struct
 * The "ElementStructs" typemark must be defined based on specific needs of the
 * application.
 ******************************************************************************/
-typedef struct LinkedListNodes
-  {
-   /* The user information field, , pointer to the actual data */
-   ElementStructs *ElementPtr;
-   /* Link pointers to other nodes */
-   struct LinkedListNodes *Next;
-   struct LinkedListNodes *Previous;
-  } LinkedListNodes;
+typedef struct LinkedListNodes {
+	/* The user information field, , pointer to the actual data */
+	ElementStructs *ElementPtr;
+	/* Link pointers to other nodes */
+	struct LinkedListNodes *Next;
+	struct LinkedListNodes *Previous;
+} LinkedListNodes;
 
 /*********************************************************************************
 * struct for linked list "header", keeps a counter of the size of the linked list
 **********************************************************************************/
-typedef struct LinkedLists
-  {
-   /* Number of elements in the list */
-   int NumElements;
-   /* Pointer to the front of the list of elements, possibly NULL */
-   struct LinkedListNodes *FrontPtr;
-   /* Pointer to the end of the list of elements, possibly NULL */
-   struct LinkedListNodes *BackPtr;
-  } LinkedLists;
+typedef struct LinkedLists {
+	/* Number of elements in the list */
+	int NumElements;
+	/* Pointer to the front of the list of elements, possibly NULL */
+	struct LinkedListNodes *FrontPtr;
+	/* Pointer to the end of the list of elements, possibly NULL */
+	struct LinkedListNodes *BackPtr;
+} LinkedLists;
 
 /******************************************************************************
  Function prototypes 

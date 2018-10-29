@@ -36,14 +36,14 @@
          fprintf(stderr, "debug: malloc() of %p at line %d in %s\n",     \
                                          (void *)P, __LINE__, __FILE__)
 
-   #define FREE_DEBUG(P)   do { free(P);                                  \
+   #define FREE_DEBUG(P)   do { 		                                  \
    fprintf(stderr, "debug: free()   of %p at line %d in %s\n",            \
                          (void *)P, __LINE__, __FILE__);                  \
    fflush(stderr);} while(0) 
 
 #else
    #define MALLOC_DEBUG(P) 
-   #define FREE_DEBUG(P)   free(P)
+   #define FREE_DEBUG(P) 
 #endif
 
 

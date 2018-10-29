@@ -45,9 +45,21 @@
  Returns: nothing
  Errors: none
 ******************************************************************************/
-void InitLinkedList(LinkedLists *ListPtr)
-{
-
+void InitLinkedList(LinkedLists *ListPtr) {
+	// Malloc the ptr
+	ListPtr = malloc(sizeof(LinkedLists));
+	MALLOC_DEBUG(ListPtr);
+	
+	//Check the malloc
+	if (ListPtr == NULL){
+		fprintf(stderr, "Failed to allocate memory. File: %s Line %s\n", __FILE__, __LINE__);
+		exit(MALLOC_ERROR);
+	}
+	
+	// Set initial list to empty
+	ListPtr->NumElements=0;
+	ListPtr->FrontPtr = NULL;
+	ListPtr->BackPtr = NULL;
 }
 
 
@@ -59,9 +71,39 @@ void InitLinkedList(LinkedLists *ListPtr)
  Returns: nothing
  Errors: Prints to stderr and exits
 ******************************************************************************/
-void AddToBackOfLinkedList(LinkedLists *ListPtr, ElementStructs *DataPtr)
-{
+void AddToBackOfLinkedList(LinkedLists *ListPtr, ElementStructs *DataPtr) {
+	LinkedListNodes newNode = malloc(sizeof(LinkedListNodes));
+	MALLOC_DEBUG(newNode);
 
+	if (newNode == NULL) {
+		fprintf(stderr, "Failed to allocate memory. File: %s Line %s\n", __FILE__, __LINE__);
+		exit(MALLOC_ERROR);
+	}
+
+	newNode->ElementPtr = DataPtr;
+
+	//Check size of list
+	if(ListPtr->NumElements == 0){
+		// If this is the first element, insert as both front and back, set
+		// next and prev to null
+		newNode->Next = NULL;
+		newNode->Previous = NULL;
+		ListPtr->FrontPtr = newNode;
+		ListPtr->BackPtr = newNode;
+	}
+	else {
+		// If not the first element, set previous to current backptr, and next to
+		// NULL, update current backptr's next
+
+		newNode->Next = NULL;
+		ListPtr->BackPtr->next = newNode;
+		newNode->previous = ListPtr->BackPtr;
+
+		//Finally, update backptr
+		ListPtr->BackPtr = newNode;
+	}
+	// increment list size
+	ListPtr->NumElements++;
 }
 
 /******************************************************************************
@@ -73,9 +115,30 @@ void AddToBackOfLinkedList(LinkedLists *ListPtr, ElementStructs *DataPtr)
  Returns: Pointer to the node removed or NULL for none
  Errors: none
 ******************************************************************************/
-ElementStructs *RemoveFromFrontOfLinkedList(LinkedLists *ListPtr)
-{
+ElementStructs *RemoveFromFrontOfLinkedList(LinkedLists *ListPtr) {
+	//Check if list is empty
+	if(ListPtr->NumElements == 0) {
+		//return null if empty
+		return NULL;
+	}
+	else {
+		//Save front ptr
+		LinkedListNodes frontNode = ListPtr->FrontPtr;
+		ElementStructs data = frontNode->ElementPtr;
 
+		//Remove front ptr
+		ListPtr->FrontPtr = frontNode->Next;
+		ListPtr->FrontPtr->Previous = NULL;
+		
+		//free node (not data)
+		FREE_DEBUG(frontNode);
+		free(frontNode);
+
+		//Update list size
+		ListPtr->NumElements--;
+		
+		return data;
+	}
 }
 
 /******************************************************************************
@@ -87,9 +150,29 @@ ElementStructs *RemoveFromFrontOfLinkedList(LinkedLists *ListPtr)
  Returns: Pointer to the node removed or NULL for none
  Errors: none
 ******************************************************************************/
-ElementStructs *RemoveFromBackOfLinkedList(LinkedLists *ListPtr)
-{
+ElementStructs *RemoveFromBackOfLinkedList(LinkedLists *ListPtr) {
+	//Check if list is empty
+	if(ListPtr->NumElements == 0) {
+		return NULL;
+	}
+	else {
+		//Save backptr
+		LinkedListNodes backNode = ListPtr->BackPtr;
+		ElementStructs data = backNode->ElementPtr;
 
+		//Remove back ptr
+		ListPtr->BackPtr = backNode->Previous;
+		ListPtr->BackPtr->Next = NULL;
+
+		//Free node (not data)
+		FREE_DEBUG(frontNode);
+		free(frontNode);
+
+		//Update list size
+		ListPtr->NumElements--;
+
+		return data;
+	}
 }
 
 
@@ -101,9 +184,31 @@ ElementStructs *RemoveFromBackOfLinkedList(LinkedLists *ListPtr)
  Returns: nothing
  Errors: none
 ******************************************************************************/
-void DestroyLinkedList(LinkedLists *ListPtr)
-{
+void DestroyLinkedList(LinkedLists *ListPtr) {
+	// Check if list has nodes 
+	if(ListPtr->NumElements > 0) {
+		LinkedListNodes cursor = ListPtr->FrontPtr;
+		//Loop through list
+		while(cursor != NULL) {
+			//Save next node
+			LinkedListNodes next = cursor->next;
+			
+			//Free the data
+			FREE_DEBUG(cursor->ElementPtr);
+			free(cursor->ElementPtr);
 
+			//Free the node
+			FREE_DEBUG(cursor);
+			
+			//Set next cursor
+			cursor = next;
+		}
+		
+		// Reset List stats and ptrs
+		ListPtr->NumElements = 0;
+		ListPtr->FrontPtr = NULL;
+		ListPtr->BackPtr = NULL;
+	}
 }
 
 
@@ -116,9 +221,19 @@ void DestroyLinkedList(LinkedLists *ListPtr)
  Returns: Pointer to the element if found, NULL otherwise
  Errors: none
  * ***************************************************************************/
-ElementStructs *SearchList(LinkedLists *ListPtr, char *String)
-{
-
+ElementStructs *SearchList(LinkedLists *ListPtr, char *String) {
+	if(ListPtr->NumElements > 0) {
+		LinkedListNodes cursor = ListPtr->FrontPtr;
+		while (cursor != NULL) {
+			//Check for string
+			if(strcmp(cursor->ElementPtr->buffer, String) == 0){
+				return cursor->ElementPtr;
+			}
+			//Advance cursor
+			cursor = cursor->Next;
+		}
+	}
+	return NULL;
 }
 
 
