@@ -49,5 +49,6 @@ void AddToBackOfLinkedList(LinkedLists *ListPtr, ElementStructs *DataPtr);
 ElementStructs *RemoveFromFrontOfLinkedList(LinkedLists *ListPtr);
 ElementStructs *RemoveFromBackOfLinkedList(LinkedLists *ListPtr);
 void DestroyLinkedList(LinkedLists *ListPtr);
+ElementStructs* SearchList(LinkedLists *ListPtr, char *String);
 
 #endif /* _LINKED_LISTS_H_ */
