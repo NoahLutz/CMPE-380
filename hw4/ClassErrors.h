@@ -23,10 +23,10 @@
 #define MATRIXNOTSQUARE       (6)
 
 /* Define NAN if this compiler does not */ 
- #ifndef NAN
+#ifndef NAN
    #define NAN (0x7f38d30d9000)
 #endif
- #ifndef iNAN
+#ifndef iNAN
    #define iNAN (0x80000000)
 #endif
 
@@ -46,7 +46,8 @@
    #define FREE_DEBUG(P) 
 #endif
 
-
+typedef int to_make_gcc_stop_complaining;
 
 
 #endif /* _CLASS_ERRORS_H_ */
+
