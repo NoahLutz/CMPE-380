@@ -1,0 +1,5 @@
+Avg Elapsed CPU Time Over 10 iterations (LinkedInputTimer) = 0.0563809 sec.
+Avg Elapsed CPU Time Over 10 iterations (DArrayInputTimer) = 0.119612 sec.
+Avg Elapsed CPU Time Over 10 iterations (LinkedSearchTimer) = 0.0074774 sec.
+Avg Elapsed CPU Time Over 10 iterations (DArraySearchTimer) = 0.0037033 sec.
+Opening us-eng-words.txt for reading...

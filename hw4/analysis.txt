@@ -1,0 +1,19 @@
+The Linked List was implemented using a doubly linked list where each node
+points to the next node, the previous node and contains a pointer to the
+actual data. When this implementation was compared to the DynamicArray
+implementation, it was observed that it took significantly less time to
+read the data into the linked list than the dynamic array and it takes
+significantly less time to search the dynamic array. The times are listed
+below:
+Linked List Read: 56.6 ms
+Dynamic Array Read: 120.1 ms
+Linked List Search: 7.73 ms
+Dynamic Array Search: 3.722 ms
+
+This effect is expected because, when reading words into dynamic array, 
+when it needs to grow the array, it performs a realloc to move the whole
+block of data which is time intensive, whereas the linked list simply
+mallocs another node for the data. Likewise, the search through the dynamic
+array is much quicker becuause all the data is contiguous in memory where
+with the linked list, it needs to jump around much more than they dynamic 
+array. 
