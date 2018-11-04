@@ -9,3 +9,8 @@
 
 # Unignore Makefiles
 !Makefile
+
+# Ignore *.exe
+*.exe
+
+# Ignore *.swp
