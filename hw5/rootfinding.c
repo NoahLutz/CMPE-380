@@ -98,6 +98,35 @@ Returns: double - the root refined to the desired tolerance or NAN
 Errors:  prints a message and returns with NAN      
 ******************************************************************************/
 double newton(func1arg f, func1arg df, double x0, int Nmax, double atol, int verb) {
+	int i = 0;
+	double xn = x0;
+	double val = 0;
+	double derivVal = 0;
+
+	while (i<Nmax) {
+		double nextX = 0;
+		val = (*f)(xn);
+
+		if(fabs(val) <= atol) {
+			return xn;
+		}
+
+		derivVal = (*df)(xn);
+
+		if (fabs(derivVal) <= atol) {
+			fprintf(stderr, "Failed f'(xn) is too close to zero\n");
+			return NAN;
+		}
+
+		nextX = xn - (val/derivVal);
+
+		if(verb) {
+			printf("iter:%d\tx0:%f\tx1:%f\terr:%f\n", i, xn, nextX, 0.0);
+		}
+		xn = nextX;
+		i++;
+	}
+	fprintf(stderr, "Failed, exceeded %d iterations without finding root", Nmax);
 	return NAN;
 }
 
@@ -119,5 +148,33 @@ Returns: double - the root refined to the desired tolerance or NAN
 Errors:  prints a message and returns with NAN        
 ******************************************************************************/
 double secant(func1arg f, double x0, double x1, int Nmax, double atol, int verb) {
+	int i = 0;
+	double xa = x0;
+	double xb = x1;
+	double val1 = 0;
+	double val2 = 0;
+
+	while (i < Nmax) {
+		val1 = (*f)(xa);
+		val2 = (*f)(xb);
+		double slope = (val2 - val1)/(xb - xa);
+		double b = val1 - (slope*xa);
+		double x_int = -b/slope;
+
+		if(verb) {
+			printf("iter:%d\tx0:%f\tx1:%f\terr:%f\n", i, xa, xb, 0.0);
+			printf("x_int:%f\tvalXint:%f\n", x_int, (*f)(x_int));
+		}
+
+		if(fabs((*f)(x_int)) <= atol) {
+			return x_int;
+		}
+		
+
+		xb = xa;
+		xa = x_int;
+		i++;
+	}
+	fprintf(stderr, "Failed, exceeded %d iterations without finding root", Nmax);
 	return NAN;
 }

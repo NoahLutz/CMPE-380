@@ -11,6 +11,9 @@
 #include "rootfinding.h"
 #include "Timers.h"
 
+
+#define MAX_GUESS 1000
+
 /************************************************************************
   Tests three types of root finding, secant, newton, and bisection,
   based on user input and prints out the timing results.
@@ -134,11 +137,21 @@ int main(int argc, char* argv[]) {
 	
 	/* Performs the root finding using the secant method */
 	else if(mode == SECANT) {
+		double value1 = secant(&func1, guess1, 1, MAX_GUESS, tol, verbose);
+		double value2 = secant(&func1, guess2, 1, MAX_GUESS, tol, verbose);
+
+		printf("Root found with guess of %f: %f\n", guess1, value1);
+		printf("Root found with guess of %f: %f\n", guess2, value2);
 
 	} // End secant
 	
 	/* Performs the root finding using newtons method */
 	else /* must be newton */ {
+		double value1 = newton(&func1, &func1Deriv, guess1, MAX_GUESS, tol, verbose);
+		double value2 = newton(&func1, &func1Deriv, guess2, MAX_GUESS, tol, verbose);
+
+		printf("Root found with guess of %f: %f\n", guess1, value1);
+		printf("Root found with guess of %f: %f\n", guess2, value2);
 
 	} // End newton 
 	
