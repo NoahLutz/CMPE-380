@@ -30,6 +30,7 @@ double bisection(func1arg f, double a, double b, double atol, int verb) {
 	double x2 = b;
 	double x3;
 	double val3;
+	double err;
 	int iter = 0;
 
 	double val1 = (*f)(x1);
@@ -49,6 +50,7 @@ double bisection(func1arg f, double a, double b, double atol, int verb) {
 		return NAN;
 	}
 	
+	err = x2 - x1;
 	int n = ceil((log(x2-x1)/atol)/log(2.0));
 	printf("N:%d\n", n);
 	for (int i = 0; i<n; i++) {
@@ -56,7 +58,7 @@ double bisection(func1arg f, double a, double b, double atol, int verb) {
 		val3 = (*f)(x3);
 		
 		if(verb) {
-			printf("iter:%d\ta:%f\tb:%f\tx:%f\terr:%f\n", iter, x1, x2, x3, 0.0);
+			printf("iter:%d\ta:%f\tb:%f\tx:%f\terr:%f\n", iter, x1, x2, x3, err);
 		}
 
 		if(fabs(val3) <= atol) {
@@ -64,10 +66,12 @@ double bisection(func1arg f, double a, double b, double atol, int verb) {
 		}
 
 		if(SIGN(val1) != SIGN(val3)) {
+			err = fabs(x3-x2);
 			x2 = x3;
 			val2 = val3;
 		}
 		else {
+			err = fabs(x3-x1);
 			x1 = x3;
 			val1 = val3;
 		}
@@ -102,9 +106,9 @@ double newton(func1arg f, func1arg df, double x0, int Nmax, double atol, int ver
 	double xn = x0;
 	double val = 0;
 	double derivVal = 0;
+	double nextX = 0;
 
 	while (i<Nmax) {
-		double nextX = 0;
 		val = (*f)(xn);
 
 		if(fabs(val) <= atol) {
@@ -121,7 +125,7 @@ double newton(func1arg f, func1arg df, double x0, int Nmax, double atol, int ver
 		nextX = xn - (val/derivVal);
 
 		if(verb) {
-			printf("iter:%d\tx0:%f\tx1:%f\terr:%f\n", i, xn, nextX, 0.0);
+			printf("iter:%d\tx0:%f\tx1:%f\terr:%f\n", i, xn, nextX, fabs(nextX-xn));
 		}
 		xn = nextX;
 		i++;
@@ -162,8 +166,7 @@ double secant(func1arg f, double x0, double x1, int Nmax, double atol, int verb)
 		double x_int = -b/slope;
 
 		if(verb) {
-			printf("iter:%d\tx0:%f\tx1:%f\terr:%f\n", i, xa, xb, 0.0);
-			printf("x_int:%f\tvalXint:%f\n", x_int, (*f)(x_int));
+			printf("iter:%d\tx0:%f\tx1:%f\terr:%f\n", i, xa, xb, fabs(xb-xa));
 		}
 
 		if(fabs((*f)(x_int)) <= atol) {

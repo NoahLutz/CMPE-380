@@ -65,13 +65,10 @@ int main(int argc, char* argv[]) {
 	opterr = 1;			  /* Enable automatic error reporting */
 	while ((rc = getopt_long_only(argc, argv, getoptOptions, long_options, 
 																	 &option_index)) != -1) {
-		
-		printf("getopt_long_only() returned ='%c' index = '%d'\n",  rc, option_index);	
 		/* Detect the end of the options. */
 		switch (rc) {
 			case 'v':						  /* Verbose */
 				verbose = 1;
-				printf("setting verbose to %d\n", verbose);
 				break;
 
 			/* Handle method */
@@ -119,7 +116,8 @@ int main(int argc, char* argv[]) {
 	/*------------------------------------------------------------------------
 		Check for command line syntax errors
 	------------------------------------------------------------------------*/
-	if ((optind < argc) /* add lots of stuff here */  ){
+	if ((optind < argc) || (mode == UNDEF) || (!isfinite(guess1)
+			   	|| !isfinite(guess2)) || fabs(tol) < FP_ZERO) {
 		fprintf(stderr, "Tests root finding methods\n");
 		fprintf(stderr, "usage: hw5 -b[isection] | -s[ecant] | -n[ewton]	-t[ol[erance} number\n");
 		fprintf(stderr, "			 -g[uess1] number	<-g[u]ess2 number	<-verb[ose]> \n");
