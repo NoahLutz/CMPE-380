@@ -13,6 +13,7 @@
 
 
 #define MAX_GUESS 1000
+#define NUM_ITERATIONS 100
 
 /************************************************************************
   Tests three types of root finding, secant, newton, and bisection,
@@ -129,8 +130,16 @@ int main(int argc, char* argv[]) {
 	 
 	/* Performs the root finding with bisection */
 	if(mode == BISECT) {
+		DECLARE_TIMER(bisection_timer);
+		DECLARE_REPEAT_VAR(bisection_var);
+		BEGIN_REPEAT_TIMING(NUM_ITERATIONS, bisection_var)
+
+		START_TIMER(bisection_timer);
 		double value = bisection(&func1, guess1, guess2, tol, verbose);
 		printf("Root found: %f\n", value);
+		STOP_TIMER(bisection_timer);
+		END_REPEAT_TIMING
+		PRINT_RTIMER(bisection_timer, NUM_ITERATIONS);
 	}  // End if bisection
 	
 	/* Performs the root finding using the secant method */
