@@ -134,7 +134,7 @@ int main(int argc, char* argv[]) {
 	
 	/* Performs the root finding using the secant method */
 	else if(mode == SECANT) {
- 
+
 	} // End secant
 	
 	/* Performs the root finding using newtons method */
