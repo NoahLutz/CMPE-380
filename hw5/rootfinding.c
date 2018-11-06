@@ -52,7 +52,6 @@ double bisection(func1arg f, double a, double b, double atol, int verb) {
 	
 	err = x2 - x1;
 	int n = ceil((log(x2-x1)/atol)/log(2.0));
-	printf("N:%d\n", n);
 	for (int i = 0; i<n; i++) {
 		x3 = (x1 + x2) / 2;
 		val3 = (*f)(x3);

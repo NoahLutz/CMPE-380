@@ -13,7 +13,7 @@
 
 
 #define MAX_GUESS 1000
-#define NUM_ITERATIONS 100
+#define NUM_ITERATIONS 1000
 
 /************************************************************************
   Tests three types of root finding, secant, newton, and bisection,
@@ -29,6 +29,7 @@ int main(int argc, char* argv[]) {
 	double guess1 = INFINITY;	
 	double guess2 = INFINITY;
 
+	
 	/*------------------------------------------------------------------------
 	 These variables are used to control the getopt_long_only command line 
 	 parsing utility.  
@@ -118,7 +119,7 @@ int main(int argc, char* argv[]) {
 		Check for command line syntax errors
 	------------------------------------------------------------------------*/
 	if ((optind < argc) || (mode == UNDEF) || (!isfinite(guess1)
-			   	|| !isfinite(guess2)) || fabs(tol) < FP_ZERO) {
+			   	|| !isfinite(guess2)) || fabs(tol) > FP_ZERO) {
 		fprintf(stderr, "Tests root finding methods\n");
 		fprintf(stderr, "usage: hw5 -b[isection] | -s[ecant] | -n[ewton]	-t[ol[erance} number\n");
 		fprintf(stderr, "			 -g[uess1] number	<-g[u]ess2 number	<-verb[ose]> \n");
@@ -130,16 +131,21 @@ int main(int argc, char* argv[]) {
 	 
 	/* Performs the root finding with bisection */
 	if(mode == BISECT) {
-		DECLARE_TIMER(bisection_timer);
-		DECLARE_REPEAT_VAR(bisection_var);
-		BEGIN_REPEAT_TIMING(NUM_ITERATIONS, bisection_var)
+		double value = 0.0;
+		DECLARE_TIMER(b_timer);
+		DECLARE_REPEAT_VAR(b_var);
 
-		START_TIMER(bisection_timer);
-		double value = bisection(&func1, guess1, guess2, tol, verbose);
-		printf("Root found: %f\n", value);
-		STOP_TIMER(bisection_timer);
+		BEGIN_REPEAT_TIMING(NUM_ITERATIONS, b_var)
+
+		START_TIMER(b_timer);
+		value = bisection(&func1, guess1, guess2, tol, verbose);
+		STOP_TIMER(b_timer);
+
 		END_REPEAT_TIMING
-		PRINT_RTIMER(bisection_timer, NUM_ITERATIONS);
+		PRINT_TIMER(b_timer);
+		printf("clock:%f\n", clock());
+		printf("start:%ld\tstop:%ld\telapsed:%ld\tstate:%d\n", b_timer.Start, b_timer.Stop, b_timer.Elapsed, b_timer.State);
+		printf("Root found: %f\n", value);
 	}  // End if bisection
 	
 	/* Performs the root finding using the secant method */

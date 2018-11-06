@@ -16,7 +16,7 @@ hw5: $(HW5_DEPS)
 .PHONY: bisection
 bisection:
 	$(CC) $(CFLAGS) -DEN_TIME $(HW5_DEPS) -o hw5
-	./hw5 -bisection -tol 1E-6 -ga -2.5 -gb 2.5 -v >> out.txt 2>&1
+	./hw5 -bisection -tol 1E-6 -ga -2.5 -gb 2.5 >> out.txt 2>&1
 	@cat out.txt
 
 .PHONY: clean
