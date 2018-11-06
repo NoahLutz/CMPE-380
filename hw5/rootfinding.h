@@ -18,7 +18,7 @@
   Change this based on your calculations and defend your decision in the
   analysis.txt file
  ***************************************************************************/
-#define QN 2                        /* place holder value, see above */
+#define QN 58                        /* place holder value, see above */
 
 /* Macros */
 #define SIGN(x) ((x) < 0 ? -1 :1)

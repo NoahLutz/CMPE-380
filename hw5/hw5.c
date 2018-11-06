@@ -142,28 +142,58 @@ int main(int argc, char* argv[]) {
 		STOP_TIMER(b_timer);
 
 		END_REPEAT_TIMING
-		PRINT_TIMER(b_timer);
-		printf("clock:%f\n", clock());
-		printf("start:%ld\tstop:%ld\telapsed:%ld\tstate:%d\n", b_timer.Start, b_timer.Stop, b_timer.Elapsed, b_timer.State);
+		PRINT_RTIMER(b_timer, NUM_ITERATIONS);
 		printf("Root found: %f\n", value);
 	}  // End if bisection
 	
 	/* Performs the root finding using the secant method */
 	else if(mode == SECANT) {
-		double value1 = secant(&func1, guess1, 1, MAX_GUESS, tol, verbose);
-		double value2 = secant(&func1, guess2, 1, MAX_GUESS, tol, verbose);
+		double value1 = 0.0;
+		double value2 = 0.0;
+		DECLARE_TIMER(s1_timer);
+		DECLARE_TIMER(s2_timer);
+		DECLARE_REPEAT_VAR(s_var);
 
+		BEGIN_REPEAT_TIMING(NUM_ITERATIONS, s_var);
+		
+		START_TIMER(s1_timer);
+		value1 = secant(&func1, guess1, 1, MAX_GUESS, tol, verbose);
+		STOP_TIMER(s1_timer);
+		START_TIMER(s2_timer);
+		value2 = secant(&func1, guess2, 1, MAX_GUESS, tol, verbose);
+		STOP_TIMER(s2_timer);
+
+		END_REPEAT_TIMING
+
+		PRINT_RTIMER(s1_timer, NUM_ITERATIONS);
 		printf("Root found with guess of %f: %f\n", guess1, value1);
+		PRINT_RTIMER(s2_timer, NUM_ITERATIONS);
 		printf("Root found with guess of %f: %f\n", guess2, value2);
 
 	} // End secant
 	
 	/* Performs the root finding using newtons method */
 	else /* must be newton */ {
-		double value1 = newton(&func1, &func1Deriv, guess1, MAX_GUESS, tol, verbose);
-		double value2 = newton(&func1, &func1Deriv, guess2, MAX_GUESS, tol, verbose);
+		double value1 = 0.0;
+		double value2 = 0.0;
+		DECLARE_TIMER(n1_timer);
+		DECLARE_TIMER(n2_timer);
+		DECLARE_REPEAT_VAR(n_var);
 
+		BEGIN_REPEAT_TIMING(NUM_ITERATIONS, n_var)
+
+		START_TIMER(n1_timer);
+		value1 = newton(&func1, &func1Deriv, guess1, MAX_GUESS, tol, verbose);
+		STOP_TIMER(n1_timer);
+		START_TIMER(n2_timer);
+		value2 = newton(&func1, &func1Deriv, guess2, MAX_GUESS, tol, verbose);
+		STOP_TIMER(n2_timer);
+
+		END_REPEAT_TIMING
+
+		PRINT_RTIMER(n1_timer, NUM_ITERATIONS);
 		printf("Root found with guess of %f: %f\n", guess1, value1);
+		PRINT_RTIMER(n2_timer, NUM_ITERATIONS);
 		printf("Root found with guess of %f: %f\n", guess2, value2);
 
 	} // End newton 

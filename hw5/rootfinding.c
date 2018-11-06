@@ -34,7 +34,7 @@ double bisection(func1arg f, double a, double b, double atol, int verb) {
 	int iter = 0;
 
 	double val1 = (*f)(x1);
-
+	
 	if (fabs(val1) <= atol) {
 		return x1;
 	}
@@ -55,7 +55,7 @@ double bisection(func1arg f, double a, double b, double atol, int verb) {
 	for (int i = 0; i<n; i++) {
 		x3 = (x1 + x2) / 2;
 		val3 = (*f)(x3);
-		
+
 		if(verb) {
 			printf("iter:%d\ta:%f\tb:%f\tx:%f\terr:%f\n", iter, x1, x2, x3, err);
 		}
@@ -76,7 +76,6 @@ double bisection(func1arg f, double a, double b, double atol, int verb) {
 		}
 		iter++;
 	}
-
 	return (double) ((x1 + x2)/2.0);
 }
 
