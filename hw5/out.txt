@@ -1,0 +1,24 @@
+Bisection:
+Avg Elapsed CPU Time Over 1000 iterations (b_timer) = 0.000002 sec.
+Root found: 1.991137
+
+Secant:
+Avg Elapsed CPU Time Over 1000 iterations (s1_timer) = 0.000006 sec.
+Avg Elapsed CPU Time Over 1000 iterations (s2_timer) = 0.000002 sec.
+Root found with guess of -1.500000: 1.991137
+Root found with guess of 1.500000: 1.991137
+
+Newton:
+Avg Elapsed CPU Time Over 1000 iterations (n1_timer) = 0.000005 sec.
+Avg Elapsed CPU Time Over 1000 iterations (n2_timer) = 0.000003 sec.
+Root found with guess of -1.500000: -88.630548
+Root found with guess of 1.500000: 1.991137
+
+Integer:
+Found the root 0.599998 using Qn 26 bisection.
+Elapsed CPU Time (timer) = 0.003393 sec.
+Avg Elapsed CPU Time Over 10000 iterations (timer) = 0.000000 sec.
+Found the root 0.599998 using float bisection.
+Elapsed CPU Time (timer) = 0.006848 sec.
+Avg Elapsed CPU Time Over 10000 iterations (timer) = 0.000001 sec.
+Qn 26 error= 0.000000

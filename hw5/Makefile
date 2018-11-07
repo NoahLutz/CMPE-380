@@ -26,13 +26,15 @@ intTest_time: $(INTTEST_DEPS)
 	$(CC) $(CFLAGS) -DEN_TIME $(INTTEST_DEPS) -o intTest
 
 .PHONY: test
-test: hw5_time
+test: hw5_time intTest_time
 	@echo 'Bisection:' > out.txt
 	./hw5 -bisection -tol 1E-6 -ga -2.5 -gb 2.5 >> out.txt 2>&1
 	@echo -e '\nSecant:' >> out.txt
 	./hw5 -secant -tol 1E-6 -ga -1.5 -gb 1.5 >> out.txt 2>&1
 	@echo -e '\nNewton:' >> out.txt
 	./hw5 -newton -tol 1E-6 -ga -1.5 -gb 1.5 >> out.txt 2>&1
+	@echo -e '\nInteger:' >> out.txt
+	./intTest >> out.txt 2>&1
 	@cat out.txt
 
 .PHONY: bisection
@@ -53,6 +55,13 @@ newton: hw5_time
 .PHONY:integer
 integer: intTest_time
 	./intTest > out.txt 2>&1
+	@cat out.txt
+
+.PHONY:opts
+opts: clean hw5
+	./hw5 -b -tol 1E-6 -ga -2 -gb 3 -verb > out.txt 2>&1
+	./hw5 -b -t 1E-6 -g -2 -u 3 -v >> out.txt 2>&1
+	./hw5 -b -t 1E-6 -ba -2 -bb 3 -v >> out.txt 2>&1
 	@cat out.txt
 
 .PHONY: clean

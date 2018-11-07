@@ -18,7 +18,7 @@
   Change this based on your calculations and defend your decision in the
   analysis.txt file
  ***************************************************************************/
-#define QN 58                        /* place holder value, see above */
+#define QN 26
 
 /* Macros */
 #define SIGN(x) ((x) < 0 ? -1 :1)
@@ -29,8 +29,8 @@
   These simplified Qn format macros, assume a constant Qn factor 
  ***************************************************************************/
 #define QBASE long
-#define FLOAT_TO_FIX(x) ( (QBASE) (x * (QBASE) (1 << QN)) )
-#define FIX_TO_FLOAT(X) ((double) (X) / (double) (1 << QN))
+#define FLOAT_TO_FIX(x) ( (QBASE) (x * (QBASE) ((QBASE)1 << QN)) )
+#define FIX_TO_FLOAT(X) ((double) (X) / (double) ((QBASE)1 << QN))
 #define Qn_DIVIDE(A,B)  ( (QBASE) ( ((QBASE)(A)<<QN)/(B) ))
 #define MUL_FIX(A,B)    ((A) * (B) >> QN)
 
