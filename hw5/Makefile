@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -pedantic -std=c99 -g -O0 -lm
+CFLAGS=-Wall -pedantic -std=c99 -g -Ofast -lm
 
 HW5_DEPS=hw5.c eqn2solve.c ClassErrors.h rootfinding.h rootfinding.c
 INTTEST_DEPS=intTest.c ClassErrors.h rootfinding.h rootfinding.c

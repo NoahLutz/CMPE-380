@@ -1,0 +1,23 @@
+After implementing the three methods for root finding, it was found that
+the -Ofast optimization level was found to produce the lowest average
+time for all operations. It should be noted that with the intTest program
+that due to so many iterations being run and the generally low time to
+solve the equation, the timing macros may show an average value of 0 due
+to not being able to accuratly represent a value that small. As to show
+that there is, in fact, a difference in the time, the total accumulated
+value for each timer is also printed. It was found that the Qn bisection
+algorithm took significantly less time than the floating-point bisection
+algorithm.
+
+The Qn value that was used was found by looking for the largest value
+seen by the function and calculating how many bits that value needs in
+order to be represented. This then leaves the rest of the bits for the
+fractional part. Since the data type that was being used was signed 64 
+bits and the largest value used in the bisection algorithm was found to
+be 25, meaning 5 bits were needed for non-fractional values, 26 bits were
+left over for fractional representation. 
+
+When the value of Qn was experimented with, making it larger would produce
+incorrect results from the Qn version of the bisection algorithm and making
+it smaller caused a greater amount of error to appear since the effective
+precision was being lowered. 

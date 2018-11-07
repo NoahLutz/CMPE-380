@@ -61,7 +61,7 @@ struct timmerDetails {
 		if (1 == A.State){														\
 			STOP_TIMER(A); /* If running, stop timer */							\
 		}																		\
-		fprintf(stderr, "Elapsed CPU Time ("#A") = %g sec.\n", 					\
+		fprintf(stderr, "Elapsed CPU Time ("#A") = %f sec.\n", 					\
 				(double)A.Elapsed / (double)CLOCKS_PER_SEC);					\
 	} /* PRINT_TIMER() */
 
