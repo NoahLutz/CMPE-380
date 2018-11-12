@@ -77,8 +77,14 @@ void freePoly(polynomial *p){
 double complex cevalPoly(polynomial *p, double complex z){
 	double complex sum = p->polyCoef[p->nterms - 1];
 	for(int i = p->nterms-2; i>=0; i--){
-		sum = sum*z + (double complex) p->polyCoef[i];
+		//printf("sum @ i=%d : ", i);
+		//printComplex(sum);
+		//printf("\n");
+		//printf("%f * %f + %f\n", creal(sum), creal(z), creal(p->polyCoef[i]));
+		sum = ((double complex)sum * (double complex)z) + (double complex) p->polyCoef[i];
 	}
+	//printf("final sum: %f", creal(sum));
+	//printf("\n");
 	return sum;
 }
 
@@ -99,16 +105,23 @@ double complex cevalPoly(polynomial *p, double complex z){
  Errors:  prints an error and exits
 ---------------------------------------------------------------------------*/
 double complex* roots(polynomial *poly, double tolerance, int verb){
-	double complex *results = evalDerivs(poly, 1.0);
-	printComplex(results[0]);
-	printf("\n");
-	printComplex(results[1]);
-	printf("\n");
-	printComplex(results[2]);
-	printf("\n");
+	polynomial *current_equ = poly;
+	double complex *roots;
+	
+	while (current_equ->nterms > 2) {
 
-	double complex value = laguerre(poly, 1E-6, 0);
-	printComplex(value);
+		double complex root = laguerre(current_equ, 1E-6, 0);
+		printf("Found root: ");
+		printComplex(value);
+		printf("\nDeflated equation: ");
+		polynomial *temp = deflPoly(current_equ, value);
+		
+		if(current_equ != poly) {
+			destroyPoly(current_equ);
+			free(current_equ);
+		}
+		current_equ = temp;
+	}
 
 	return NULL;
 }
@@ -230,7 +243,17 @@ static double complex laguerre(polynomial *p, double tol, int verb){
   Errors:  none
 ---------------------------------------------------------------------------*/
 static polynomial* deflPoly(polynomial *p, double complex root){
-	return NULL;
+	double complex remainder = p->polyCoef[p->nterms-1];
+	polynomial *def_p = malloc(sizeof(polynomial));
+
+	initPoly(def_p, p->nterms-1);
+
+	for(int i = p->nterms-2; i>=0; i--) {
+		def_p->polyCoef[i] = remainder;
+		remainder = (remainder * root) + p->polyCoef[i];
+	}
+	
+	return def_p;
 }
 
 
@@ -253,9 +276,9 @@ static void printComplex(double complex x){
 ---------------------------------------------------------------------------*/
 void printPoly (polynomial *p){
 	for(int i = p->nterms-1; i>0; i--){
-		printf("(%f%+fi)x^%d + ", creal(p->polyCoef[i]), cimag(p->polyCoef[i]), i);
+		printf("(%f)x^%d + ", creal(p->polyCoef[i]), i);
 	}
-	printf("(%f%+fi)\n", creal(p->polyCoef[0]), cimag(p->polyCoef[0]));
+	printf("(%f)\n", creal(p->polyCoef[0]));
 }
 
 /*---------------------------------------------------------------------------

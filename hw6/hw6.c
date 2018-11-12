@@ -16,6 +16,16 @@ int main (int argc, char* argv[]) {
 	p.polyCoef[2] = -0.75;
 	p.polyCoef[3] = 0.02;
 
+	double complex a = 1909.0;
+	double complex b = 1.5;
+	double complex result;
+
+	result = a * b + b;
+
+	printf("result: %lf%+lfi\n", creal(result), cimag(result));
+	printf("result: %f%+fi\n", creal(result), cimag(result));
+
+
 	printPoly(&p);
 	
 	roots(&p, 0.0, 0);
