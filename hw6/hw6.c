@@ -12,7 +12,7 @@ int main (int argc, char* argv[]) {
 	
 	int verbose = 0;
 	char* input_file = NULL;
-
+	FILE *file = NULL;
 
 	int rc;
 	int option_index = 0;
@@ -47,9 +47,23 @@ int main (int argc, char* argv[]) {
 	}
 
 	if(input_file != NULL) {
-		//TODO: parse file
+		printf("File is: %s\n", input_file);
+		file = fopen(input_file, "r");
+
+		if(file != NULL){
+			
+		}
+		else {
+			fprintf(stderr, "Could not open file %s for reading.\n", input_file);
+			exit(PGM_FILE_NOT_FOUND_ERROR);
+		}
+
 	}
-		
+	else {
+		fprintf(stderr, "No input file specified.\n");
+		exit(PGM_FILE_NOT_FOUND_ERROR);
+	}
+
 	polynomial p = {0, NULL};
 	initPoly(&p, 4);
 	p.polyCoef[0] = 1;
@@ -84,4 +98,18 @@ int main (int argc, char* argv[]) {
 	//printf("\n");
 
 	return PGM_SUCCESS;
+}
+
+
+polynomial* readPolynomial(FILE* file) {
+	int nterms = 0;
+	char buffer[255];
+	FILE *temp;
+
+	if(fgets(buffer, 255, file)) {
+		
+	}
+	
+
+
 }
