@@ -77,14 +77,8 @@ void freePoly(polynomial *p){
 double complex cevalPoly(polynomial *p, double complex z){
 	double complex sum = p->polyCoef[p->nterms - 1];
 	for(int i = p->nterms-2; i>=0; i--){
-		//printf("sum @ i=%d : ", i);
-		//printComplex(sum);
-		//printf("\n");
-		//printf("%f * %f + %f\n", creal(sum), creal(z), creal(p->polyCoef[i]));
 		sum = ((double complex)sum * (double complex)z) + (double complex) p->polyCoef[i];
 	}
-	//printf("final sum: %f", creal(sum));
-	//printf("\n");
 	return sum;
 }
 
@@ -106,24 +100,112 @@ double complex cevalPoly(polynomial *p, double complex z){
 ---------------------------------------------------------------------------*/
 double complex* roots(polynomial *poly, double tolerance, int verb){
 	polynomial *current_equ = poly;
-	double complex *roots;
+	int arraySize = 10;
+	int numRoots = 0;
+	double complex *roots = malloc(arraySize * sizeof(double complex));
 	
-	while (current_equ->nterms > 2) {
+	while (current_equ->nterms > 3) {
+		double complex root = laguerre(current_equ, tolerance, verb);
 
-		double complex root = laguerre(current_equ, 1E-6, 0);
-		printf("Found root: ");
-		printComplex(value);
-		printf("\nDeflated equation: ");
-		polynomial *temp = deflPoly(current_equ, value);
+		//Add root to list
+		if(numRoots >= arraySize){
+			if(cimag(root) > ZERO) {
+				arraySize+=2;
+			}
+			else {
+				arraySize++;
+			}
+			roots = realloc(roots, arraySize * sizeof(double complex));
+		}
+
+		polynomial *temp;
+
+		if(cimag(root) > ZERO) {
+			if(verb) {
+				printf("\tFound two roots: ");
+				printComplex(root);
+				printComplex(conj(root));
+				printf("\n");
+			}
+
+			roots[numRoots++] = root;
+			roots[numRoots++] = conj(root);
+
+			//Deflate the equation with both roots
+			temp = deflPoly(current_equ, root);
+			temp = deflPoly(temp, conj(root));
+		}
+		else {
+			if(verb) {
+				printf("\tFound root: %f\n", creal(root));
+			}
+			roots[numRoots++] = root;
+
+			//Deflate the equation with the one root
+			temp = deflPoly(current_equ, root);
+		}
 		
+		if(verb) {
+			printf("\n\tDeflated equation: ");
+			printPoly(temp);
+		}
+		
+		//Free the previous equation (if not the one passed in)
 		if(current_equ != poly) {
-			destroyPoly(current_equ);
+			freePoly(current_equ);
 			free(current_equ);
 		}
+
+		//Update current equation
 		current_equ = temp;
 	}
+	
+	//TODO: use quadratic for last two roots
+	double complex *quad_roots = quadraticRoots(current_equ);
 
-	return NULL;
+	if(verb){
+		printf("\tFinding remaining roots using quadratic formula...\n");
+	}
+
+	if(numRoots >= arraySize){
+		if(cimag(quad_roots[0]) > ZERO) {
+			arraySize+=2;
+		}
+		else {
+			arraySize++;
+		}
+		if(cimag(quad_roots[1]) > ZERO) {
+			arraySize+=2;
+		}
+		else {
+			arraySize++;
+		}
+		roots = realloc(roots, arraySize * sizeof(double complex));
+	}
+	if(cabs(cevalPoly(poly, quad_roots[0])) <= tolerance){
+		if(verb) {
+			printf("\tFound root: ");
+			printComplex(quad_roots[0]);
+			printf("\n");
+		}
+		roots[numRoots++] = quad_roots[0];
+	}
+	if(cabs(cevalPoly(poly, quad_roots[1])) <= tolerance) {
+		if(verb) {
+			printf("\tFound root: ");
+			printComplex(quad_roots[1]);
+			printf("\n");
+		}
+		roots[numRoots++] = quad_roots[1];
+	}
+
+	//Terminate array with NAN
+	if (numRoots >= arraySize){
+		arraySize++;
+		roots = realloc(roots, arraySize * sizeof(double complex));
+	}
+	roots[numRoots] = NAN + 0*I;
+	return roots;
 }
 
 /*---------------------------------------------------------------------------
@@ -177,7 +259,23 @@ static double complex* evalDerivs(polynomial *p, double complex point){
   Errors:  prints an error and exits
 ---------------------------------------------------------------------------*/
 static double complex* quadraticRoots( polynomial *p){
-	return NULL;
+	double complex *roots = malloc(2 * sizeof(double complex));
+	double complex sqrt_term;
+	double complex a = p->polyCoef[2];
+	double complex b = p->polyCoef[1];
+	double complex c = p->polyCoef[0];
+	
+	if(p->nterms != 3) {
+		fprintf(stderr, "Error: quadraticRoots() called using %d order polynomial\n", p->nterms-1);
+		exit(PGM_INTERNAL_ERROR);
+	}
+
+	sqrt_term = csqrt(cpow(b,2)- 4 * a * c);
+
+	roots[0] = ((-1 * b) + sqrt_term) / (2*a);
+	roots[1] = ((-1 * b) - sqrt_term) / (2*a);
+
+	return roots;
 }
 
 
@@ -202,15 +300,23 @@ static double complex laguerre(polynomial *p, double tol, int verb){
 	double complex h;
 	double complex alpha;
 	int i = 0;
-
+	
+	if(verb) {
+		printf("\tLaguerre's Algorithm ( tol = %G )\n", tol);
+	}
 	while (i < MAX_ITERATIONS) {
+		if(verb) {
+			printf("\t  it: %d x: %f\n", i, cabs(x));
+		}
 		evalResults = evalDerivs(p, x);
 
-		if(cabs(creal(evalResults[0])) <= ZERO && cabs(cimag(evalResults[0]) <= ZERO)){
+		if(cabs(creal(evalResults[0])) <= ZERO 
+				&& cabs(cimag(evalResults[0]) <= ZERO)){
 			return x;
 		}
 		g = evalResults[1]/evalResults[0];
 		h = cpow(g, 2) - (evalResults[2]/evalResults[1]);
+
 		
 
 		double complex alpha_denom1 = (g + csqrt((p->nterms-2) * (((p->nterms-1) * h) - cpow(g,2))));
@@ -224,12 +330,18 @@ static double complex laguerre(polynomial *p, double tol, int verb){
 			alpha = (p->nterms-1) / alpha_denom2;
 		}
 
+		if(verb) {
+			printf("\t\tG(x): %f\n", cabs(g));
+			printf("\t\tH(x): %f\n", cabs(h));
+			printf("\t\tAlpha: %f\n", cabs(alpha));
+		}
+
 		if((cabs(creal(alpha)) <= tol) && (cabs(cimag(alpha)) <= tol)){
-			printf("here %d\n", i);
 			return x;
 		}
 
 		x = x - alpha;
+		i++;
 	}
     return NAN;
 }
@@ -276,7 +388,9 @@ static void printComplex(double complex x){
 ---------------------------------------------------------------------------*/
 void printPoly (polynomial *p){
 	for(int i = p->nterms-1; i>0; i--){
-		printf("(%f)x^%d + ", creal(p->polyCoef[i]), i);
+		if(cabs(p->polyCoef[i]) > ZERO){
+			printf("(%f)x^%d + ", creal(p->polyCoef[i]), i);
+		}
 	}
 	printf("(%f)\n", creal(p->polyCoef[0]));
 }

@@ -21,6 +21,7 @@
 
 /* Macros */
 #define SIGN(x) ((x) < 0 ? -1 :1)
+#define ZERO 0.00000001
 
 /* Typemarks **********************************************************
  * The data structure to hold all coefficients of a polynomial.
