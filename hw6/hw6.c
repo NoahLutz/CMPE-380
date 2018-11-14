@@ -6,7 +6,7 @@
 #include "ClassErrors.h"
 #include "poly.h"
 
-
+polynomial* readPolynomial(FILE* file);
 
 int main (int argc, char* argv[]) {
 	
@@ -51,43 +51,50 @@ int main (int argc, char* argv[]) {
 		file = fopen(input_file, "r");
 
 		if(file != NULL){
-			
+			polynomial* poly = readPolynomial(file);
+			printf("%p\n", poly);
+			printf("%p\n", file);
+			printPoly(poly);
+			poly = readPolynomial(file);
+			printPoly(poly);
+			printf("%p\n", file);
+
 		}
 		else {
 			fprintf(stderr, "Could not open file %s for reading.\n", input_file);
-			exit(PGM_FILE_NOT_FOUND_ERROR);
+			exit(PGM_FILE_NOT_FOUND);
 		}
 
 	}
 	else {
 		fprintf(stderr, "No input file specified.\n");
-		exit(PGM_FILE_NOT_FOUND_ERROR);
+		exit(PGM_FILE_NOT_FOUND);
 	}
 
-	polynomial p = {0, NULL};
-	initPoly(&p, 4);
-	p.polyCoef[0] = 1;
-	p.polyCoef[1] = 1;
-	p.polyCoef[2] = 0;
-	p.polyCoef[3] = 1;
+	//polynomial p = {0, NULL};
+	//initPoly(&p, 4);
+	//p.polyCoef[0] = 1;
+	//p.polyCoef[1] = 1;
+	//p.polyCoef[2] = 0;
+	//p.polyCoef[3] = 1;
 
-	
-	printf("P(x) = ");
-	printPoly(&p);
-	
-	double complex *roots_array = roots(&p, 1E-6, verbose);
-	double complex *cursor = roots_array;
-	
-	printf("Roots: \n");
-	while (!isnan(creal(*cursor))) {
-		if(cabs(cimag(*cursor)) > ZERO) {
-			printf("\t%f%+fi\n", creal(*cursor), cimag(*cursor));
-		}
-		else {
-			printf("\t%f\n", creal(*cursor));
-		}
-		cursor++;
-	}	
+	//
+	//printf("P(x) = ");
+	//printPoly(&p);
+	//
+	//double complex *roots_array = roots(&p, 1E-6, verbose);
+	//double complex *cursor = roots_array;
+	//
+	//printf("Roots: \n");
+	//while (!isnan(creal(*cursor))) {
+	//	if(cabs(cimag(*cursor)) > ZERO) {
+	//		printf("\t%f%+fi\n", creal(*cursor), cimag(*cursor));
+	//	}
+	//	else {
+	//		printf("\t%f\n", creal(*cursor));
+	//	}
+	//	cursor++;
+	//}	
 	
 	//double complex *results = evalDerivs(&p, (double complex)1.0);
 	//printComplex(results[0]);
@@ -104,12 +111,34 @@ int main (int argc, char* argv[]) {
 polynomial* readPolynomial(FILE* file) {
 	int nterms = 0;
 	char buffer[255];
-	FILE *temp;
+	double complex coef_buffer[255];
+	polynomial* poly = NULL;
 
-	if(fgets(buffer, 255, file)) {
+	if(fgets(buffer, 255, file) != NULL) {
+		char *token = strtok(buffer, " ");
+
+		while(token != NULL) {
+			coef_buffer[nterms] = atof(token);
+			nterms++;
+			token = strtok(NULL, " ");
+		}
+
+		poly = malloc(sizeof(polynomial));
+		if (poly == NULL) {
+			fprintf(stderr, "Failed to malloc\n");
+			exit(MALLOC_ERROR);
+		}
+
+		initPoly(poly, nterms);
 		
+		for(int i = nterms-1; i>= 0; i--) {
+			poly->polyCoef[nterms-1-i] = coef_buffer[i];
+		}
+	}
+	else {
+		return NULL;
 	}
 	
 
-
+	return poly;
 }
