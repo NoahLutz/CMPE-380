@@ -1,0 +1,16 @@
+While implementing roots(), I reached a point where I had to decide on
+how to implement the list that it returned. Because there was a variable
+number of roots for each polynomial, I decided to do something similar
+to how strings are null terminated in C. I decided to terminate the array
+with NAN. This allows a loop to be written to loop through the array, and 
+stop when a value of NAN is found. The quadraticRoots and evalDerivs 
+functions also return arrays of double complex values, but these arrays are
+always the same size, so there is no need to NAN-terminate it. 
+
+The other issue I ran into while implementing the roots() function was 
+memory leaking. I had two separate memory issues, one was that I wasn't 
+properly freeing the temporary polynomial that was created when deflating
+two imaginary roots. The second was that in the while loop in the laguerre()
+function, I wasn't freeing the array returned by evalDerivs() at the end of
+the loop, meaning on the next iteration, the pointer would be overwritten,
+leaving the data un-free'd and causing a memory leak.

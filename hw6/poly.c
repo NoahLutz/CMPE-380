@@ -29,7 +29,7 @@ static double complex* quadraticRoots( polynomial *p);
 static double complex laguerre(polynomial *p, double tol, int verb);
 static polynomial* deflPoly(polynomial *p, double complex root);
 static double complex* evalDerivs(polynomial *p, double complex point);
-static void printComplex(double complex x);
+//static void printComplex(double complex x);
 
 /*---------------------------------------------------------------------------
   Initializes a polynomial data structure with nterms.  This allocates storage
@@ -43,6 +43,7 @@ static void printComplex(double complex x);
 void initPoly(polynomial *p, unsigned int nterms){
 	p->nterms = nterms;
 	p->polyCoef = malloc(nterms*sizeof(double complex));
+	MALLOC_DEBUG(p->polyCoef);
 	if(p->polyCoef == NULL) {
 		fprintf(stderr, "Failed to allocate memory for polynomial. File: %s Line: %d",
 				__FILE__, __LINE__);
@@ -60,6 +61,7 @@ void initPoly(polynomial *p, unsigned int nterms){
 ---------------------------------------------------------------------------*/
 void freePoly(polynomial *p){
 	p->nterms = 0;
+	FREE_DEBUG(p->polyCoef);
 	free(p->polyCoef);
 }
 
@@ -100,9 +102,12 @@ double complex cevalPoly(polynomial *p, double complex z){
 ---------------------------------------------------------------------------*/
 double complex* roots(polynomial *poly, double tolerance, int verb){
 	polynomial *current_equ = poly;
+	polynomial *temp;
 	int arraySize = 10;
 	int numRoots = 0;
+
 	double complex *roots = malloc(arraySize * sizeof(double complex));
+	MALLOC_DEBUG(roots);
 	
 	while (current_equ->nterms > 3) {
 		double complex root = laguerre(current_equ, tolerance, verb);
@@ -118,8 +123,6 @@ double complex* roots(polynomial *poly, double tolerance, int verb){
 			roots = realloc(roots, arraySize * sizeof(double complex));
 		}
 
-		polynomial *temp;
-
 		if(cimag(root) > ZERO) {
 			if(verb) {
 				printf("\tFound imaginary root, deflating twice.\n");
@@ -129,8 +132,14 @@ double complex* roots(polynomial *poly, double tolerance, int verb){
 			roots[numRoots++] = conj(root);
 
 			//Deflate the equation with both roots
-			temp = deflPoly(current_equ, root);
-			temp = deflPoly(temp, conj(root));
+			polynomial *temp2 = deflPoly(current_equ, root);
+			if(current_equ != poly) {
+				freePoly(current_equ);
+				free(current_equ);
+			}
+			temp = deflPoly(temp2, conj(root));
+			freePoly(temp2);
+			free(temp2);
 		}
 		else {
 			if(verb) {
@@ -140,6 +149,10 @@ double complex* roots(polynomial *poly, double tolerance, int verb){
 
 			//Deflate the equation with the one root
 			temp = deflPoly(current_equ, root);
+			if(current_equ != poly) {
+				freePoly(current_equ);
+				free(current_equ);
+			}
 		}
 		
 		if(verb) {
@@ -147,17 +160,10 @@ double complex* roots(polynomial *poly, double tolerance, int verb){
 			printPoly(temp);
 		}
 		
-		//Free the previous equation (if not the one passed in)
-		if(current_equ != poly) {
-			freePoly(current_equ);
-			free(current_equ);
-		}
-
 		//Update current equation
 		current_equ = temp;
 	}
 	if (current_equ->nterms == 3) {
-		//TODO: use quadratic for last two roots
 		double complex *quad_roots = quadraticRoots(current_equ);
 
 		if(verb){
@@ -185,6 +191,8 @@ double complex* roots(polynomial *poly, double tolerance, int verb){
 		if(cabs(cevalPoly(poly, quad_roots[1])) <= tolerance) {
 			roots[numRoots++] = quad_roots[1];
 		}
+		FREE_DEBUG(quad_roots);
+		free(quad_roots);
 	}
 	else {
 		// Solve using simple math
@@ -196,6 +204,12 @@ double complex* roots(polynomial *poly, double tolerance, int verb){
 			roots[numRoots++] = -1* current_equ->polyCoef[0] 
 				/ current_equ->polyCoef[1];
 		}
+	}
+	
+	// Free the last equation (if needed)
+	if(current_equ != poly){
+		freePoly(current_equ);
+		free(current_equ);
 	}
 
 	//Terminate array with NAN
@@ -228,8 +242,14 @@ double complex* roots(polynomial *poly, double tolerance, int verb){
 ---------------------------------------------------------------------------*/
 static double complex* evalDerivs(polynomial *p, double complex point){
 	double complex* results = malloc(3*sizeof(double complex));
+	MALLOC_DEBUG(results);
 	polynomial d;
 	polynomial dd;
+	
+	if(results == NULL) {
+		fprintf(stderr, "Failed to allocate memory.\n");
+		exit(MALLOC_ERROR);
+	}
 
 	initPoly(&d, p->nterms-1);
 	initPoly(&dd, p->nterms-2);
@@ -247,6 +267,9 @@ static double complex* evalDerivs(polynomial *p, double complex point){
 	results[1] = cevalPoly(&d, point);
 	results[2] = cevalPoly(&dd, point);
 
+	freePoly(&d);
+	freePoly(&dd);
+
 	return results;
 }
 
@@ -259,13 +282,20 @@ static double complex* evalDerivs(polynomial *p, double complex point){
 ---------------------------------------------------------------------------*/
 static double complex* quadraticRoots( polynomial *p){
 	double complex *roots = malloc(2 * sizeof(double complex));
+	MALLOC_DEBUG(roots);
 	double complex sqrt_term;
 	double complex a = p->polyCoef[2];
 	double complex b = p->polyCoef[1];
 	double complex c = p->polyCoef[0];
 	
+	if(roots == NULL) {
+		fprintf(stderr, "Failed to allocate memory.\n");
+		exit(MALLOC_ERROR);
+	}
+
 	if(p->nterms != 3) {
-		fprintf(stderr, "Error: quadraticRoots() called using %d order polynomial\n", p->nterms-1);
+		fprintf(stderr, "Error: quadraticRoots() called using %d order polynomial\n"
+				, p->nterms-1);
 		exit(PGM_INTERNAL_ERROR);
 	}
 
@@ -311,11 +341,14 @@ static double complex laguerre(polynomial *p, double tol, int verb){
 		
 		if(cabs(evalResults[1]) <= ZERO || cabs(evalResults[2]) <= ZERO) {
 			x = 1.0;
+			free(evalResults);
 			evalResults = evalDerivs(p, x);
 		}
 
 		if(cabs(creal(evalResults[0])) <= ZERO 
 				&& cabs(cimag(evalResults[0]) <= ZERO)){
+			FREE_DEBUG(evalResults);
+			free(evalResults);
 			return x;
 		}
 		g = evalResults[1]/evalResults[0];
@@ -340,12 +373,17 @@ static double complex laguerre(polynomial *p, double tol, int verb){
 		}
 
 		if((cabs(creal(alpha)) <= tol) && (cabs(cimag(alpha)) <= tol)){
+			FREE_DEBUG(evalResults);
+			free(evalResults);
 			return x;
 		}
 
 		x = x - alpha;
 		i++;
+		free(evalResults);
 	}
+	FREE_DEBUG(evalResults);
+	free(evalResults);
     return NAN;
 }
 
@@ -360,6 +398,7 @@ static double complex laguerre(polynomial *p, double tol, int verb){
 static polynomial* deflPoly(polynomial *p, double complex root){
 	double complex remainder = p->polyCoef[p->nterms-1];
 	polynomial *def_p = malloc(sizeof(polynomial));
+	MALLOC_DEBUG(def_p);
 
 	initPoly(def_p, p->nterms-1);
 
@@ -379,9 +418,9 @@ static polynomial* deflPoly(polynomial *p, double complex root){
   returns:  nothing
   errors:   none
 ---------------------------------------------------------------------------*/
-static void printComplex(double complex x){
-	printf("(%f%+fi)", creal(x), cimag(x));
-}
+//static void printComplex(double complex x){
+//	printf("(%f%+fi)", creal(x), cimag(x));
+//}
 
 /*---------------------------------------------------------------------------
   Prints a polynomial
