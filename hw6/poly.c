@@ -122,10 +122,7 @@ double complex* roots(polynomial *poly, double tolerance, int verb){
 
 		if(cimag(root) > ZERO) {
 			if(verb) {
-				printf("\tFound two roots: ");
-				printComplex(root);
-				printComplex(conj(root));
-				printf("\n");
+				printf("\tFound imaginary root, deflating twice.\n");
 			}
 
 			roots[numRoots++] = root;
@@ -146,7 +143,7 @@ double complex* roots(polynomial *poly, double tolerance, int verb){
 		}
 		
 		if(verb) {
-			printf("\n\tDeflated equation: ");
+			printf("\tDeflated equation: ");
 			printPoly(temp);
 		}
 		
@@ -159,44 +156,46 @@ double complex* roots(polynomial *poly, double tolerance, int verb){
 		//Update current equation
 		current_equ = temp;
 	}
-	
-	//TODO: use quadratic for last two roots
-	double complex *quad_roots = quadraticRoots(current_equ);
+	if (current_equ->nterms == 3) {
+		//TODO: use quadratic for last two roots
+		double complex *quad_roots = quadraticRoots(current_equ);
 
-	if(verb){
-		printf("\tFinding remaining roots using quadratic formula...\n");
-	}
+		if(verb){
+			printf("\tFound final two roots through the quadratic formula\n");
+		}
 
-	if(numRoots >= arraySize){
-		if(cimag(quad_roots[0]) > ZERO) {
-			arraySize+=2;
+		if(numRoots >= arraySize){
+			if(cimag(quad_roots[0]) > ZERO) {
+				arraySize+=2;
+			}
+			else {
+				arraySize++;
+			}
+			if(cimag(quad_roots[1]) > ZERO) {
+				arraySize+=2;
+			}
+			else {
+				arraySize++;
+			}
+			roots = realloc(roots, arraySize * sizeof(double complex));
 		}
-		else {
-			arraySize++;
+		if(cabs(cevalPoly(poly, quad_roots[0])) <= tolerance){
+			roots[numRoots++] = quad_roots[0];
 		}
-		if(cimag(quad_roots[1]) > ZERO) {
-			arraySize+=2;
+		if(cabs(cevalPoly(poly, quad_roots[1])) <= tolerance) {
+			roots[numRoots++] = quad_roots[1];
 		}
-		else {
-			arraySize++;
-		}
-		roots = realloc(roots, arraySize * sizeof(double complex));
 	}
-	if(cabs(cevalPoly(poly, quad_roots[0])) <= tolerance){
-		if(verb) {
-			printf("\tFound root: ");
-			printComplex(quad_roots[0]);
-			printf("\n");
+	else {
+		// Solve using simple math
+		if(current_equ->nterms == 2) {
+			if(verb) {
+				printf("Found final root using simple math\n");
+			}
+
+			roots[numRoots++] = -1* current_equ->polyCoef[0] 
+				/ current_equ->polyCoef[1];
 		}
-		roots[numRoots++] = quad_roots[0];
-	}
-	if(cabs(cevalPoly(poly, quad_roots[1])) <= tolerance) {
-		if(verb) {
-			printf("\tFound root: ");
-			printComplex(quad_roots[1]);
-			printf("\n");
-		}
-		roots[numRoots++] = quad_roots[1];
 	}
 
 	//Terminate array with NAN
@@ -309,6 +308,11 @@ static double complex laguerre(polynomial *p, double tol, int verb){
 			printf("\t  it: %d x: %f\n", i, cabs(x));
 		}
 		evalResults = evalDerivs(p, x);
+		
+		if(cabs(evalResults[1]) <= ZERO || cabs(evalResults[2]) <= ZERO) {
+			x = 1.0;
+			evalResults = evalDerivs(p, x);
+		}
 
 		if(cabs(creal(evalResults[0])) <= ZERO 
 				&& cabs(cimag(evalResults[0]) <= ZERO)){
@@ -317,7 +321,6 @@ static double complex laguerre(polynomial *p, double tol, int verb){
 		g = evalResults[1]/evalResults[0];
 		h = cpow(g, 2) - (evalResults[2]/evalResults[1]);
 
-		
 
 		double complex alpha_denom1 = (g + csqrt((p->nterms-2) * (((p->nterms-1) * h) - cpow(g,2))));
 		double complex alpha_denom2 = (g - csqrt((p->nterms-2) * (((p->nterms-1) * h) - cpow(g,2))));

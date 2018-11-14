@@ -51,13 +51,51 @@ int main (int argc, char* argv[]) {
 		file = fopen(input_file, "r");
 
 		if(file != NULL){
-			polynomial* poly = readPolynomial(file);
-			printf("%p\n", poly);
-			printf("%p\n", file);
-			printPoly(poly);
-			poly = readPolynomial(file);
-			printPoly(poly);
-			printf("%p\n", file);
+			char buffer[255];
+			//Loop though all lines
+			while(fgets(buffer, 255, file) != NULL) {
+				int nterms = 0;
+				double complex coef_buffer[255];
+				polynomial poly;
+
+				//tokenize the string to get all coeficents
+				char *token = strtok(buffer, " ");
+				
+				//Parse all coeficients
+				while(token != NULL) {
+					coef_buffer[nterms] = atof(token);
+					nterms++;
+					token = strtok(NULL, " ");
+				}
+
+				//Initialize the polynomial 
+				initPoly(&poly, nterms);
+				
+				//Set the coeficients
+				for(int i = nterms-1; i>= 0; i--) {
+					poly.polyCoef[nterms-1-i] = coef_buffer[i];
+				}
+				
+				printf("P(x) = ");
+				printPoly(&poly);
+
+				double complex *roots_array = roots(&poly, ZERO, verbose);
+				double complex *cursor = roots_array;
+				
+				printf("Roots:\n");
+				while(!isnan(creal(*cursor))) {
+					if(cabs(cimag(*cursor)) > ZERO) {
+						printf("\t%f%+fi\n", creal(*cursor), cimag(*cursor));
+					}
+					else {
+						printf("\t%f\n", creal(*cursor));
+					}
+					cursor++;
+				}
+
+				free(roots_array);
+				freePoly(&poly);
+			}
 
 		}
 		else {
