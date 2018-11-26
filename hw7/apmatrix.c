@@ -114,9 +114,6 @@ void PLU_solve(Matrix *A, iVector *p, rVector *b, rVector *x){
 	L = extract_L(A);
 	U = extract_U(A);
 
-	m_print(L, "%f\t");
-	m_print(U, "%f\t");
-
 	//Solve for C using forward subst.
 	c->vec[0] = b->vec[0];
 	for(int i = 1; i<c->n; i++) {
@@ -128,8 +125,19 @@ void PLU_solve(Matrix *A, iVector *p, rVector *b, rVector *x){
 		}
 		c->vec[i] = (b->vec[i] - sum);
 	}
-	
-	rv_print(c, "%f\n");
+
+	//Solve for x using backwards subst.
+	x->vec[x->n-1] = c->vec[x->n-1]/U->mat[x->n-1][x->n-1];
+	for(int i = x->n-2; i>=0; i--) {
+		double sum = 0;
+		for(int j = U->nc-1; j > i; j--){
+			sum += U->mat[i][j] * x->vec[j];
+		}
+		x->vec[i] = (c->vec[i] - sum)/U->mat[i][i];
+	}
+	rv_free(c);
+	m_free(L);
+	m_free(U);
 }
 
 /*---------------------------------------------------------------------------
@@ -389,7 +397,6 @@ void iv_print(const iVector* V, const char* fs){
 	for(int i = 0; i< V->n; i++) {
 		printf(fs, V->ivec[i]);
 	}
-	putchar('\n');
 }
 
 

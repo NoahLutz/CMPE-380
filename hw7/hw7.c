@@ -9,6 +9,7 @@
 
 int main(int argc, char* argv[]) {
 	int verbose = 0;
+	char *input_file = NULL;
 	FILE *file = NULL;
 
 	char buffer[255];
@@ -18,6 +19,7 @@ int main(int argc, char* argv[]) {
 	Matrix* A = NULL;
 	iVector* p = NULL;
 	rVector* b = NULL;
+	rVector* x = NULL;
 
 	int rc;
 	int option_index = 0;
@@ -38,7 +40,7 @@ int main(int argc, char* argv[]) {
 				verbose = 1;
 				break;
 			case 'i':
-				file = fopen(optarg, "r");
+				input_file = optarg;
 				break;
 			case '?':
 				fprintf(stderr, "Encountered error parsing options.\n");
@@ -50,7 +52,12 @@ int main(int argc, char* argv[]) {
 				break;
 		}
 	}
+	if(input_file==NULL) {
+		fprintf(stderr, "No file specified.\n");
+		exit(PGM_FILE_NOT_FOUND);
+	}
 
+	file = fopen(input_file, "r");
 	if(file == NULL) {
 		fprintf(stderr, "Could not open file for reading\n");
 		exit(PGM_FILE_NOT_FOUND);
@@ -60,6 +67,13 @@ int main(int argc, char* argv[]) {
 	if(fgets(buffer, 255, file) == NULL){
 		fprintf(stderr, "Failed to read file\n");
 		exit(PGM_INTERNAL_ERROR);
+	}
+
+	// Replace all tabs with space
+	for(char* temp = buffer; *temp != '\0'; temp++) {
+		if(*temp == '\t'){
+			*temp=' ';
+		}
 	}
 
 	// Parse rows and columns
@@ -75,6 +89,12 @@ int main(int argc, char* argv[]) {
 		exit(PGM_INTERNAL_ERROR);
 	}
 	cols = atoi(token);
+	
+	if(rows != cols-1) {
+		fprintf(stderr, 
+				"Matrix not square, cannot solve using Gaussian Elimination.\n");
+		exit(PGM_INTERNAL_ERROR);
+	}
 
 	//Allocate space for G matrix
 	G = m_alloc(rows, cols);
@@ -85,8 +105,14 @@ int main(int argc, char* argv[]) {
 	int cur_col = 0;
 
 	while(fgets(buffer, 255, file) != NULL) {
+		for(char* temp = buffer; *temp != '\0'; temp++) {
+			// Replace all tabs with space
+			if(*temp == '\t'){
+				*temp=' ';
+			}
+		}
 		token = strtok(buffer, " ");
-		while(token!=NULL) {
+		while(token!=NULL && cur_row < rows && cur_col < cols) {
 			G->mat[cur_row][cur_col] = atof(token);
 			cur_col++;
 			token = strtok(NULL, " ");
@@ -94,8 +120,7 @@ int main(int argc, char* argv[]) {
 		cur_row++;
 		cur_col = 0;
 	}
-
-	m_print(G, "%f\t");
+	printf("********** %s **********\n", input_file);
 	
 	//Copy over vector into A (minus b vector)
 	for(int i = 0; i<rows; i++) {
@@ -104,15 +129,19 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
+	printf("A=\n");
+	m_print(A, "%8.4f");
+
 	//Set up b vector
 	b = rv_alloc(A->nr);
 	for(int i = 0; i<G->nr; i++) {
 		b->vec[i] = G->mat[i][G->nc-1];
 	}
-	printf("b:\n");
-	rv_print(b, "%f\n");
+	printf("b=\n");
+	rv_print(b, "\t%8.4f\n");
 
-	m_print(A, "%f\t");
+	//Set up x vector
+	x = rv_alloc(A->nr);
 	
 	//Set up p vector
 	p = iv_alloc(A->nr);
@@ -122,11 +151,21 @@ int main(int argc, char* argv[]) {
 
 	PLU_factor(A, p);
 
-	m_print(A, "%f\t");
+	if(verbose) {
+		printf("P = [ ");
+		iv_print(p, "%d ");
+		printf("]\n");
+		
+		printf("LU matrix = \n");
+		m_print(A, "%8.4f");
+	}
 
-	PLU_solve(A, p, b, NULL);
 
-	m_print(A, "%f\t");
+	PLU_solve(A, p, b, x);
+
+	printf("x = \n");
+	rv_print(x, "\t%8.4f\n");
+
 
 	return PGM_SUCCESS;
 }
