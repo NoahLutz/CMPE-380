@@ -19,7 +19,8 @@
 #include "ClassErrors.h"
 #include "apmatrix.h"
 
-
+Matrix* extract_L(Matrix* A);
+Matrix* extract_U(Matrix* A);
 		
 
 /*---------------------------------------------------------------------------
@@ -37,7 +38,50 @@
 							 - 3 = No pivot point found, not solvable
 ---------------------------------------------------------------------------*/
 int PLU_factor(Matrix *A, iVector *p){
+	//Find non-zero pivot
+	if(A->mat[0][0] <= ZERO){
+		// Loop through all rows if first has zero pivot
+		for(int i = 1; i< A->nr; i++) {
+			if(A->mat[i][0] > ZERO) {
+				//If non-zero pivot found, swap rows
+				double* row0 = A->mat[0];
+				A->mat[0] = A->mat[i];
+				A->mat[i] = row0;
 
+				//Adjust p vector as well
+				int p0 = p->ivec[0];
+				p->ivec[0] = p->ivec[i];
+				p->ivec[i] = p0;
+
+				//Break the loop once pivot is found
+				break;
+			}
+		}
+		if(A->mat[0][0] <= ZERO) {
+			// If unable to find pivot, return status code 3
+			return 3;
+		}
+	}
+			
+	//Loop through all rows
+	for(int i = 0; i< A->nr-1; i++){
+		//Get the pivot
+		double pivot = A->mat[i][i];
+
+		//Put in values for L vector
+		for(int j = i+1; j<A->nc; j++) {
+			A->mat[j][i] = A->mat[j][i]/pivot;
+		}
+
+		//Adjust next rows
+		for(int j = i+1; j<A->nr; j++) {
+			double multiplier = A->mat[j][i];
+			for(int k = i+1; k<A->nc; k++){
+				A->mat[j][k] = A->mat[j][k] - multiplier * A->mat[i][k];
+			}
+		}
+	}
+	return 0;
 }
 
 
@@ -51,8 +95,86 @@ int PLU_factor(Matrix *A, iVector *p){
 	Errors: none
 	Returns: nothing
 ---------------------------------------------------------------------------*/
-void PLU_solve(Matrix *GA, iVector *p, rVector *b, rVector *x){
+void PLU_solve(Matrix *A, iVector *p, rVector *b, rVector *x){
+	rVector *c = NULL;
+	Matrix *L = NULL;
+	Matrix *U = NULL;
 	
+	//Sort b according to p
+	for(int i = 0; i<p->n; i++) {
+		if(p->ivec[i] != i) {
+			double temp = b->vec[i];
+			b->vec[i] = b->vec[p->ivec[i]];
+			b->vec[p->ivec[i]] = temp;
+		}
+	}
+
+	c = rv_alloc(p->n);
+
+	L = extract_L(A);
+	U = extract_U(A);
+
+	m_print(L, "%f\t");
+	m_print(U, "%f\t");
+
+	//Solve for C using forward subst.
+	c->vec[0] = b->vec[0];
+	for(int i = 1; i<c->n; i++) {
+		double sum = 0;
+		for(int j = 0; j<A->nc; j++){
+			if(i>j) {
+				sum += L->mat[i][j] * c->vec[j];
+			}
+		}
+		c->vec[i] = (b->vec[i] - sum);
+	}
+	
+	rv_print(c, "%f\n");
+}
+
+/*---------------------------------------------------------------------------
+	Extracts L matrix from PLU factored matrix
+	
+	Where: Matrix	*A - Pointer to the PLU factored matrix
+	
+	Errors: none
+	Returns: L Matrix
+---------------------------------------------------------------------------*/
+Matrix* extract_L(Matrix *A){
+	Matrix *L = m_alloc(A->nr, A->nc);
+
+	for(int i = 0; i<A->nr; i++){
+		for(int j = 0; j<A->nc; j++) {
+			if(i == j) {
+				L->mat[i][j] = 1.0;
+			}
+			if(i>j) {
+				L->mat[i][j] = A->mat[i][j];
+			}
+		}
+	}
+	return L;
+}
+
+/*---------------------------------------------------------------------------
+	Extracts U matrix from PLU factored matrix
+	
+	Where: Matrix	*A - Pointer to the PLU factored matrix
+	
+	Errors: none
+	Returns: U Matrix
+---------------------------------------------------------------------------*/
+Matrix* extract_U(Matrix *A){
+	Matrix *U = m_alloc(A->nr, A->nc);
+
+	for(int i = 0; i<A->nr; i++) {
+		for(int j = 0; j<A->nc; j++) {
+			if(i<=j) {
+				U->mat[i][j] = A->mat[i][j];
+			}
+		}
+	}
+	return U;
 }
 
 /*---------------------------------------------------------------------------
@@ -176,7 +298,8 @@ rVector* rv_alloc(int n) {
 				__LINE__, __FILE__);
 		exit(CALLOC_ERROR);
 	}
-
+	
+	r->n = n;
 	return r;
 }
 
@@ -204,7 +327,8 @@ iVector* iv_alloc(int n) {
 				__LINE__, __FILE__);
 		exit(CALLOC_ERROR);
 	}
-
+	
+	i->n = n;
 	return i;
 
 }
@@ -279,5 +403,5 @@ void iv_print(const iVector* V, const char* fs){
 	Returns: rVector * - Pointer to the resulting vector
 ---------------------------------------------------------------------------*/
 rVector* MtimesV(Matrix* M, rVector* V){
-
+	return NULL;
 }
