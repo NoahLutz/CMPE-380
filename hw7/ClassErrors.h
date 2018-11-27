@@ -31,7 +31,7 @@
 #endif
 
 #ifndef ZERO
-	#define ZERO 0.0000001
+	#define ZERO __DBL_EPSILON__
 #endif
 
 /* Clever macros */

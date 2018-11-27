@@ -1,25 +1,16 @@
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <math.h>
 #include <getopt.h>
+#include <string.h>
+#include <gsl/gsl_linalg.h>
 #include "ClassErrors.h"
 #include "Timers.h"
-#include "apmatrix.h"
-
 
 int main(int argc, char* argv[]) {
 	int verbose = 0;
 	char *input_file = NULL;
 	FILE *file = NULL;
-
 	char buffer[255];
-	char *token;
-	int rows,cols;
-	Matrix* A = NULL;
-	iVector* p = NULL;
-	rVector* b = NULL;
-	rVector* x = NULL;
+	int nr,nc,s;
 
 	int rc;
 	int option_index = 0;
@@ -65,13 +56,13 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr, "Could not open file for reading\n");
 		exit(PGM_FILE_NOT_FOUND);
 	}
-
+	
 	//Get first line (# rows and cols)
 	if(fgets(buffer, 255, file) == NULL){
 		fprintf(stderr, "Failed to read file\n");
 		exit(PGM_INTERNAL_ERROR);
 	}
-
+	
 	// Replace all tabs with space
 	for(char* temp = buffer; *temp != '\0'; temp++) {
 		if(*temp == '\t'){
@@ -80,40 +71,39 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Parse rows and columns
-	token = strtok(buffer, " ");
+	char* token = strtok(buffer, " ");
 	if(token == NULL) {
 		fprintf(stderr, "Error encountered while parsing file\n");
 		exit(PGM_INTERNAL_ERROR);
 	}
-	rows = atoi(token);
+	nr = atoi(token);
 	token = strtok(NULL, " ");
 	if(token == NULL) {
 		fprintf(stderr, "Error encountered while parsing file\n");
 		exit(PGM_INTERNAL_ERROR);
 	}
-	cols = atoi(token);
+	nc = atoi(token);
 	
-	if(rows != cols-1) {
+	if(nr != nc-1) {
 		fprintf(stderr, 
 				"Matrix not square, cannot solve using Gaussian Elimination.\n");
 		exit(PGM_INTERNAL_ERROR);
 	}
 
-	//Allocate space for A matrix
-	A = m_alloc(rows, cols-1);
-
-	//Set up b vector
-	b = rv_alloc(A->nr);
-
-	double *a_data = malloc(rows*(cols-1) * sizeof(double));
-	double *b_data = malloc(rows * sizeof(double));;
+	gsl_matrix *A = gsl_matrix_calloc(nr, nc-1);
+	gsl_vector *b = gsl_vector_calloc(nr);
+	gsl_vector *x = gsl_vector_calloc(nr);
+	gsl_permutation *p = gsl_permutation_alloc(nr);
 	
 	double value = 0;
+	double *a_data = malloc(nr*(nc-1) * sizeof(double));
+	double *b_data = malloc(nr * sizeof(double));;
+
 	int cnt = 0;
 	int acnt = 0;
 	int bcnt = 0;
-	while(fscanf(file, "%lf", &value) != NULL && bcnt < rows) {
-		if(((cnt+1) % cols) == 0 && cnt!=0) {
+	while(fscanf(file, "%lf", &value) != NULL && bcnt < nr) {
+		if(((cnt+1) % nc) == 0 && cnt!=0) {
 			b_data[bcnt++] = value;
 		}
 		else {
@@ -122,72 +112,62 @@ int main(int argc, char* argv[]) {
 		cnt++;
 	}
 
-	fclose(file);
-
 	cnt = 0;
 	bcnt = 0;
-	for(int i = 0; i<rows; i++){
-		for(int j = 0; j<cols-1; j++) {
-			A->mat[i][j] = a_data[cnt++];
+	for(int i = 0; i<nr; i++){
+		for(int j = 0; j<nc-1; j++) {
+			gsl_matrix_set(A,i,j,a_data[cnt++]);
 		}
 
-		b->vec[i] = b_data[bcnt++];
+		gsl_vector_set(b,i,b_data[bcnt++]);
 	}
-
+	
 	free(a_data);
 	free(b_data);
 
 	printf("********** %s **********\n", input_file);
 
 	printf("A=\n");
-	m_print(A, "%8.4f");
-
-	printf("b=\n");
-	rv_print(b, "\t%8.4f\n");
-
-	//Set up x vector
-	x = rv_alloc(A->nr);
-	
-	//Set up p vector
-	p = iv_alloc(A->nr);
-	for(int i = 0; i<A->nr; i++){
-		p->ivec[i] = i;
+	for(int i = 0; i<nr; i++) {
+		for(int j = 0; j<nc-1; j++) {
+			printf("%8.4f", gsl_matrix_get(A,i,j));
+		}
+		putchar('\n');
 	}
-	
+	printf("\nb=\n");
+	gsl_vector_fprintf(stdout, b, "\t%8.4f");
+
 	START_TIMER(factor);
-	int status = PLU_factor(A, p);
+	gsl_linalg_LU_decomp(A, p, &s);
 	STOP_TIMER(factor);
-
-	if(status == 3) {
-		fprintf(stderr, "Failed to find solution for given matrix.\n");
-		m_free(A);
-		iv_free(p);
-		rv_free(b);
-		rv_free(x);
-		exit(PGM_INTERNAL_ERROR);
-	}
-
+	
 	if(verbose) {
-		printf("P = [ ");
-		iv_print(p, "%d ");
-		printf("]\n");
-		
+		fprintf(stdout, "\nP = [");
+		gsl_permutation_fprintf (stdout, p, " %u");
+		fprintf(stdout, " ] \n");
+
 		printf("LU matrix = \n");
-		m_print(A, "%8.4f");
+
+		for(int i = 0; i<nr; i++) {
+			for(int j = 0; j<nc-1; j++) {
+				printf("%8.4f ", gsl_matrix_get(A,i,j));
+			}
+			putchar('\n');
+		}
 	}
 
 	START_TIMER(solve);
-	PLU_solve(A, p, b, x);
+	gsl_linalg_LU_solve(A, p, b, x);
 	STOP_TIMER(solve);
 
-	printf("x = \n");
-	rv_print(x, "\t%8.4f\n");
+	printf("\nx=\n");
+	gsl_vector_fprintf(stdout, x, "\t%8.4f");
 
-	m_free(A);
-	rv_free(b);
-	rv_free(x);
-	iv_free(p);
-	
+	gsl_matrix_free(A);
+	gsl_vector_free(b);
+	gsl_vector_free(x);
+	gsl_permutation_free(p);
+
 	PRINT_TIMER(factor);
 	PRINT_TIMER(solve);
 	return PGM_SUCCESS;

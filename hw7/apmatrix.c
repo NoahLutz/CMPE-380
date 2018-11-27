@@ -38,35 +38,40 @@ Matrix* extract_U(Matrix* A);
 							 - 3 = No pivot point found, not solvable
 ---------------------------------------------------------------------------*/
 int PLU_factor(Matrix *A, iVector *p){
-	//Find non-zero pivot
-	if(A->mat[0][0] <= ZERO){
-		// Loop through all rows if first has zero pivot
-		for(int i = 1; i< A->nr; i++) {
-			if(A->mat[i][0] > ZERO) {
-				//If non-zero pivot found, swap rows
-				double* row0 = A->mat[0];
-				A->mat[0] = A->mat[i];
-				A->mat[i] = row0;
-
-				//Adjust p vector as well
-				int p0 = p->ivec[0];
-				p->ivec[0] = p->ivec[i];
-				p->ivec[i] = p0;
-
-				//Break the loop once pivot is found
-				break;
-			}
-		}
-		if(A->mat[0][0] <= ZERO) {
-			// If unable to find pivot, return status code 3
-			return 3;
-		}
-	}
-			
 	//Loop through all rows
 	for(int i = 0; i< A->nr-1; i++){
+		//Identify largest pivot value
+		double largestPivot = A->mat[i][i];
+		int largestPivotRowIndex = i;
+		//Loop through remaining rows
+		for(int k = i+1; k < A->nr; k++) {
+			//If pivot value is larger, set new pivot value
+			if(fabs(A->mat[k][i]) > fabs(largestPivot)) {
+				largestPivot = A->mat[k][i];
+				largestPivotRowIndex = k;
+			}
+		}
+
+		//swap with current value
+		if(largestPivotRowIndex != i) {
+			
+			//Swap rows
+			double *temp = A->mat[largestPivotRowIndex];
+			A->mat[largestPivotRowIndex] = A->mat[i];
+			A->mat[i] = temp;
+			
+			//Adjust p vector
+			double ptemp = p->ivec[largestPivotRowIndex];
+			p->ivec[largestPivotRowIndex] = p->ivec[i];
+			p->ivec[i] = ptemp;
+		}
+
 		//Get the pivot
 		double pivot = A->mat[i][i];
+
+		if(fabs(pivot) <= ZERO) {
+			return 3;
+		}
 
 		//Put in values for L vector
 		for(int j = i+1; j<A->nc; j++) {
@@ -78,6 +83,11 @@ int PLU_factor(Matrix *A, iVector *p){
 			double multiplier = A->mat[j][i];
 			for(int k = i+1; k<A->nc; k++){
 				A->mat[j][k] = A->mat[j][k] - multiplier * A->mat[i][k];
+				if(j == k) {
+					if(fabs(A->mat[j][k]) <= ZERO){
+						return 3;
+					}
+				}
 			}
 		}
 	}
@@ -100,14 +110,17 @@ void PLU_solve(Matrix *A, iVector *p, rVector *b, rVector *x){
 	Matrix *L = NULL;
 	Matrix *U = NULL;
 	
+	double *b_cpy = malloc(b->n * sizeof(double));
+	
+	//Make of copy of b data
+	memcpy(b_cpy, b->vec, b->n * sizeof(double));
+
 	//Sort b according to p
 	for(int i = 0; i<p->n; i++) {
-		if(p->ivec[i] != i) {
-			double temp = b->vec[i];
-			b->vec[i] = b->vec[p->ivec[i]];
-			b->vec[p->ivec[i]] = temp;
-		}
+		b->vec[i] = b_cpy[p->ivec[i]];
 	}
+	
+	free(b_cpy);
 
 	c = rv_alloc(p->n);
 
