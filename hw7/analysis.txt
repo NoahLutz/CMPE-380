@@ -1,0 +1,61 @@
+The resulting x vectors from each input file can be seen below.
+
+ge1.txt
+x = 
+	-1.75
+	-1.0
+	 5.5
+
+ge2.txt
+x =
+	-75359.4043
+     3932950.6078
+    -56715807.3215
+     358886419.5002
+    -1159200690.8102
+     2000559371.8266
+    -1877105898.3692
+     1396785824.9995
+    -2046085292.8137
+     2664101243.1343
+    -1677500821.5579
+     392383552.2631
+
+ge3.txt
+x = NO SOLUTION
+
+ge4.txt
+x = 
+	-2.6857
+	-1.5429
+	 0.8286
+
+After confirming my results both with the gsl_test.c and with octave,
+the algorithm used in hw7.c returns the proper results. When debugging
+ge3.txt, I noticed that the algorithm failed due to the fact that
+during the second iteration through PLU factorization, there is no pivot
+larger than DBL_EPSILON, meaning the system of equations is not solveable.
+
+To test timing, a large data set (rand.txt) was used for both hw7.c and 
+gsl_test.c. When running the code on my personal system, I got the following
+results.
+
+hw7.c:
+	Elapsed CPU Time (factor) = 14.680480 sec.
+	Elapsed CPU Time (solve) = 0.064159 sec.
+
+gsl_test.c
+	Elapsed CPU Time (factor) = 3.006357 sec.
+	Elapsed CPU Time (solve) = 0.006835 sec.
+
+Note: Due to the fact that the matrix in rand.txt is so large and the fact
+that I wasn't able to get all of my timings to print out at the very end 
+of the output file when running with "$ make time", I used grep to find the
+timing values the first set is the timing values from hw7.c and the second
+set is from gsl_test.c.
+	$ cat out.txt | grep 'Elapsed'
+
+As I expected, gsl_test.c implements both factoring and solving much
+quicker than the PLU_factor and PLU_solve that I wrote. 
+
+

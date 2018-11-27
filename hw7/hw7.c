@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
 	int cnt = 0;
 	int acnt = 0;
 	int bcnt = 0;
-	while(fscanf(file, "%lf", &value) != NULL && bcnt < rows) {
+	while(fscanf(file, "%lf", &value) != 0 && bcnt < rows) {
 		if(((cnt+1) % cols) == 0 && cnt!=0) {
 			b_data[bcnt++] = value;
 		}
@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
 	STOP_TIMER(factor);
 
 	if(status == 3) {
-		fprintf(stderr, "Failed to find solution for given matrix.\n");
+		fprintf(stdout, "Failed to find solution for given matrix.\n");
 		m_free(A);
 		iv_free(p);
 		rv_free(b);
@@ -188,6 +188,7 @@ int main(int argc, char* argv[]) {
 	rv_free(x);
 	iv_free(p);
 	
+	fflush(stdout);
 	PRINT_TIMER(factor);
 	PRINT_TIMER(solve);
 	return PGM_SUCCESS;

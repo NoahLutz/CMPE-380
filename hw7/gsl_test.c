@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
 	int cnt = 0;
 	int acnt = 0;
 	int bcnt = 0;
-	while(fscanf(file, "%lf", &value) != NULL && bcnt < nr) {
+	while(fscanf(file, "%lf", &value) != 0 && bcnt < nr) {
 		if(((cnt+1) % nc) == 0 && cnt!=0) {
 			b_data[bcnt++] = value;
 		}
