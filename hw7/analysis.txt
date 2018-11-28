@@ -56,6 +56,9 @@ set is from gsl_test.c.
 	$ cat out.txt | grep 'Elapsed'
 
 As I expected, gsl_test.c implements both factoring and solving much
-quicker than the PLU_factor and PLU_solve that I wrote. 
+quicker than the PLU_factor and PLU_solve that I wrote. The GSL PLU factor
+implementation was 4.943 times faster than my implementation and the PLU solve
+was 9.387 times faster than my implementation. Overall, the GLS implementation
+was 4.953 times faster than my implementation.
 
 
