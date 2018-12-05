@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
 				norm = 1;
 				break;
 			case 'o':
-				order = atoi(optarg);
+				order = atoi(optarg) + 1;
 				break;
 			case 'p':
 				input_file = optarg;
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 		pointsFile = stdin;
 	}
 
-	if(order <= 0) {
+	if(order <= 1) {
 		fprintf(stderr, "Please specify order > 0\n");
 		return PGM_INTERNAL_ERROR;
 	}
@@ -113,7 +113,11 @@ int main(int argc, char *argv[]) {
 
 	x_ls = gsl_vector_calloc(order);
 	
-	Norm_FindPoint(points.EntriesUsed, order, &points, x_ls, verbose);
+	if(norm) {
+		Norm_FindPoint(points.EntriesUsed, order, &points, x_ls, verbose);
+
+	}
+
 
  	/* Clean up */
 	gsl_vector_free(x_ls);  
@@ -139,7 +143,6 @@ int main(int argc, char *argv[]) {
 ---------------------------------------------------------------------------*/
 void Norm_FindPoint(int nr, int nc, const DArray *points, gsl_vector *x_ls, int verbose) {
 	double x;
-	int i, j;			/* counters					  */
 	gsl_matrix *A;	 /* coefficient matrix A	  */
 	gsl_matrix *AT;	/* coefficient matrix A'	 */
 	gsl_matrix *ATA;  /* coefficient matrix A'A	*/
@@ -208,16 +211,37 @@ void Norm_FindPoint(int nr, int nc, const DArray *points, gsl_vector *x_ls, int 
 	}
 
 	/* Solve for x */
-	gsl_permutation *p = gsl_permutation_alloc(nc);
-	int s;
-	gsl_linalg_LU_decomp(ATA, p, &s);
-	gsl_linalg_LU_solve(ATA, p, ATB, x_ls);
+	gsl_linalg_QR_decomp(ATA, tau);
+	gsl_linalg_QR_lssolve(ATA, tau, ATB, x_ls, res);
 
-
-	printf("x_ls=\n");
-	for(int i = 0; i<nc; i++) {
-		printf("%7.4lf\n", gsl_vector_get(x_ls, i));
+	if(verbose) {
+		printf("x_ls=\n");
+		for(int i = 0; i<nc; i++) {
+			printf("%7.4lf\n", gsl_vector_get(x_ls, i));
+		}
 	}
+
+	printf("Least Squares Solution via Norm factorization\n");
+	printf("f(x)= ");
+	for(int i = 0; i<nc; i++) {
+		printf("%7.4lf", gsl_vector_get(x_ls, i));
+		if(i == 1) {
+			printf("x");
+		}
+		else if(i > 1) {
+			printf("x^%d", i);
+		}
+		if(i + 1 != nc) {
+			printf(" + ");
+		}
+	}
+	putchar('\n');
+
+	printf("res=\n");
+	for(int i = 0; i<nc; i++) {
+		printf("%7.4lf\n", gsl_vector_get(res, i));
+	}
+	printf("\nNorm of Residuals error = %7.4lf\n", gsl_blas_dnrm2(res));
  
 	/* Free memory  */
 	gsl_matrix_free(A);
@@ -225,7 +249,7 @@ void Norm_FindPoint(int nr, int nc, const DArray *points, gsl_vector *x_ls, int 
 	gsl_matrix_free(ATA);
 	gsl_vector_free(b);
 	gsl_vector_free(ATB);
-	gsl_vector_free(tau); 
+	gsl_vector_free(tau);
 	gsl_vector_free(res);
 } /* end Norm_FindPoint() */
 
