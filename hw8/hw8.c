@@ -115,7 +115,29 @@ int main(int argc, char *argv[]) {
 	
 	if(norm) {
 		Norm_FindPoint(points.EntriesUsed, order, &points, x_ls, verbose);
+		//gsl_vector_set(x_ls, 0, 1000);
+		double normofResiduals = normOfResiduals(points.EntriesUsed, order, &points, x_ls);
+		double rsquared = RSquareError(points.EntriesUsed, order, &points, x_ls);
 
+		printf("Least Squares Solution via Norm factorization\n");
+		printf("f(x)= ");
+		for(int i = 0; i<order; i++) {
+			printf("%e", gsl_vector_get(x_ls, i));
+			if(i == 1) {
+				printf("x");
+			}
+			else if(i > 1) {
+				printf("x^%d", i);
+			}
+			if(i + 1 != order) {
+				printf(" + ");
+			}
+		}
+		putchar('\n');
+		putchar('\n');
+
+		printf("Norm of Residuals Error = %7.4f\n", normofResiduals);
+		printf("R^2 = %7.6f\n", rsquared);
 	}
 
 
@@ -175,17 +197,45 @@ void Norm_FindPoint(int nr, int nc, const DArray *points, gsl_vector *x_ls, int 
 		gsl_vector_set(b,i, points->Payload[i].yval);
 	}
 
-
-	printf("A=\n");
-	for(int i = 0; i<nr; i++) {
-		for(int j = 0; j<nc; j++) {
-			printf("%7.2lf", gsl_matrix_get(A, i,j));
+	if(verbose) {
+		printf("A=\n");
+		if(nr<=4) {
+			for(int i = 0; i<nr; i++) {
+				for(int j = 0; j<nc; j++) {
+					printf("%8f", gsl_matrix_get(A, i,j));
+				}
+				putchar('\n');
+			}
 		}
-		putchar('\n');
-	}
-	printf("b=\n");
-	for(int i = 0; i<nr; i++) {
-		printf("%7.2lf\n", gsl_vector_get(b, i));
+		else {
+			for(int i = 0; i<2; i++) {
+				for(int j = 0; j<nc; j++) {
+					printf("%8f", gsl_matrix_get(A,i,j));
+				}
+			}
+			printf("\n.........\n");
+			for(int i = nr-2; i<nr; i++) {
+				for(int j = 0; j<nc; j++) {
+					printf("%8f", gsl_matrix_get(A,i,j));
+				}
+			}
+		}
+
+		printf("b=\n");
+		if(nr<=4) {
+			for(int i = 0; i<nr; i++) {
+				printf("%8f\n", gsl_vector_get(b, i));
+			}
+		}
+		else {
+			for(int i = 0; i<2; i++){
+				printf("%8f\n", gsl_vector_get(b, i));
+			}
+			printf(".........\n");
+			for(int i = nr-2; i<nr; i++){
+				printf("%8f\n", gsl_vector_get(b, i));
+			}
+		}
 	}
  
 	/* Transpose A matrix */
@@ -194,20 +244,24 @@ void Norm_FindPoint(int nr, int nc, const DArray *points, gsl_vector *x_ls, int 
 	/* Calculate ATA */
 	gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, AT, A, 0.0, ATA);
 	
-	printf("ATA=\n");
-	for(int i = 0; i<nc; i++) {
-		for(int j = 0; j<nc; j++) {
-			printf("%7.2lf", gsl_matrix_get(ATA, i,j));
+	if(verbose) {
+		printf("ATA=\n");
+		for(int i = 0; i<nc; i++) {
+			for(int j = 0; j<nc; j++) {
+				printf("%7.2lf", gsl_matrix_get(ATA, i,j));
+			}
+			putchar('\n');
 		}
-		putchar('\n');
 	}
 
 	/* Calculate ATB */
 	gsl_blas_dgemv(CblasNoTrans, 1.0, AT, b, 0.0, ATB);
 	
-	printf("ATb=\n");
-	for(int i = 0; i<nc; i++) {
-		printf("%7.4lf\n", gsl_vector_get(ATB, i));
+	if(verbose) {
+		printf("ATb=\n");
+		for(int i = 0; i<nc; i++) {
+			printf("%7.4lf\n", gsl_vector_get(ATB, i));
+		}
 	}
 
 	/* Solve for x */
@@ -220,28 +274,6 @@ void Norm_FindPoint(int nr, int nc, const DArray *points, gsl_vector *x_ls, int 
 			printf("%7.4lf\n", gsl_vector_get(x_ls, i));
 		}
 	}
-
-	printf("Least Squares Solution via Norm factorization\n");
-	printf("f(x)= ");
-	for(int i = 0; i<nc; i++) {
-		printf("%7.4lf", gsl_vector_get(x_ls, i));
-		if(i == 1) {
-			printf("x");
-		}
-		else if(i > 1) {
-			printf("x^%d", i);
-		}
-		if(i + 1 != nc) {
-			printf(" + ");
-		}
-	}
-	putchar('\n');
-
-	printf("res=\n");
-	for(int i = 0; i<nc; i++) {
-		printf("%7.4lf\n", gsl_vector_get(res, i));
-	}
-	printf("\nNorm of Residuals error = %7.4lf\n", gsl_blas_dnrm2(res));
  
 	/* Free memory  */
 	gsl_matrix_free(A);
@@ -272,7 +304,16 @@ void Norm_FindPoint(int nr, int nc, const DArray *points, gsl_vector *x_ls, int 
   Returns: double norm of residuals
 ****************************************************************************/
 double normOfResiduals(int nr, int nc, const DArray *points, const gsl_vector *x_ls) {
-  
+	double sum = 0;
+	for(int i = 0; i<nr; i++) {
+		double y, fx;
+		y = points->Payload[i].yval;
+		fx = evalPoly(nc, points->Payload[i].xval, x_ls);
+
+		sum = sum + ((y-fx) * (y-fx));
+	}
+
+	return sqrt(sum);
 } /* normOfResiduals */
 
 
@@ -292,7 +333,29 @@ double normOfResiduals(int nr, int nc, const DArray *points, const gsl_vector *x
   Returns: R squared error
 ****************************************************************************/
 double RSquareError(int nr, int nc, const DArray *points, const gsl_vector *x_ls) {
-  
+	double u = 0;
+	double numerator = 0;
+	double denom = 0;
+	printf("denom=%f\n", denom);
+	/* Calculate u */
+	for(int i = 0; i<nr; i++) {
+		u+=points->Payload[i].yval;
+	}
+
+	u = (double)u/(double)nr;
+
+	/* Calculate numerator */
+	for(int i = 0; i<nr; i++) {
+		numerator += ((points->Payload[i].yval - evalPoly(nc, points->Payload[i].xval, x_ls)) * (points->Payload[i].yval - evalPoly(nc, points->Payload[i].xval, x_ls)));
+	}
+
+	/* Calculate denominator */
+	for(int i = 0; i<nr; i++) {
+		denom+= ((points->Payload[i].yval - u) * (points->Payload[i].yval - u));
+	}
+	
+	/* calculate r**2 */
+	return (1 - ((double)numerator/(double)denom));
 } /* End RSquareError */
 
 
@@ -310,9 +373,43 @@ double RSquareError(int nr, int nc, const DArray *points, const gsl_vector *x_ls
 		 
  Returns: double pearson_srq 
 *****************************************************************************/
-double pearson_correl(int nr, int nc, const DArray *points,
-															 const gsl_vector *x_ls) {
- 
+double pearson_correl(int nr, int nc, const DArray *points, const gsl_vector *x_ls) {
+	double numerator = 0;
+	double denom = 0;
+	double term1,term2, term3, term4, term5, term6, term7;
+
+	/* Calculate terms */
+	term1 = 0;
+	term2 = 0;
+	term3 = 0;
+	term5 = 0;
+	term7 = 0;
+	for(int i = 0; i<nr; i++) {
+		term1 += (points->Payload[i].yval * evalPoly(nc, points->Payload[i].xval, x_ls));
+		term2 += points->Payload[i].yval;
+		term3 += evalPoly(nc, points->Paylod[i].xval, x_ls);
+		term5 += (points->Payload[i].yval * points->Payload[i].yval);
+		term7 += (points->Payload[i].xval * points->Payload[i].xval);
+	}
+	term1 = term1*nr;
+
+	/* Calculate terms 4 and 6 */
+	term4 = 0;
+	term6 = 0;
+	for(int i = 0; i<nr; i++) {
+		double temp = 0;
+		term4+= (points->Payload[i].yval * points->Payload[i].yval) - (term5);
+		temp = evalPoly(nc, points->Payload[i].xval, x_ls);
+		term6+= (temp * temp) - term7;
+	}
+	term4 = term4 * nr;
+	term6 = term6 * nr;
+
+	numerator = term1 - (term2 * term3);
+	denom = sqrt(term4 * term6);
+
+	return numerator/denom;
+
 } /* End pearson_correl */
 
 
@@ -330,9 +427,11 @@ double pearson_correl(int nr, int nc, const DArray *points,
  Errors:  none
 *****************************************************************************************/
 double evalPoly(int nc, double x, const gsl_vector *x_ls) {
-  
-	
-  
+	double sum = gsl_vector_get(x_ls, nc-1);
+	for(int i = nc-2; i>=0; i--) {
+		sum = (sum * x) + gsl_vector_get(x_ls, i);
+	}
+	return sum;
 } /* End evalPoly */
 
 
