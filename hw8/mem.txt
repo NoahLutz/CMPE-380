@@ -1,0 +1,20 @@
+==9609== Memcheck, a memory error detector
+==9609== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==9609== Using Valgrind-3.14.0 and LibVEX; rerun with -h for copyright info
+==9609== Command: ./hw8 -n -o 3 -p data.txt
+==9609== 
+Least Squares Solution via Norm factorization
+f(x)= 3.701614e+01 + 4.998119e-02x + 7.515106e-05x^2 + -1.723046e-08x^3
+
+Norm of Residuals Error = 2588.381862
+R^2 = 0.882458
+Pearson Correlation = 0.939392
+==9609== 
+==9609== HEAP SUMMARY:
+==9609==     in use at exit: 0 bytes in 0 blocks
+==9609==   total heap usage: 66 allocs, 66 frees, 2,157,952 bytes allocated
+==9609== 
+==9609== All heap blocks were freed -- no leaks are possible
+==9609== 
+==9609== For counts of detected and suppressed errors, rerun with: -v
+==9609== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

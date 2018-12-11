@@ -111,7 +111,8 @@ int main(int argc, char *argv[]) {
 	
 	CreateDArray(&points, 0);
 	readPoints(pointsFile, &points);
-
+	
+	fclose(pointsFile);
 	x_ls = gsl_vector_calloc(order);
 	
 	if(norm) {
@@ -167,7 +168,6 @@ int main(int argc, char *argv[]) {
   Errors: Assumes the standard GSL error handler
 ---------------------------------------------------------------------------*/
 void Norm_FindPoint(int nr, int nc, const DArray *points, gsl_vector *x_ls, int verbose) {
-	double x;
 	gsl_matrix *A;	 /* coefficient matrix A	  */
 	gsl_matrix *AT;	/* coefficient matrix A'	 */
 	gsl_matrix *ATA;  /* coefficient matrix A'A	*/
@@ -485,18 +485,13 @@ void readPoints(FILE *file, DArray *DArrayPtr) {
 	int i = 0;
 	
 	while(fscanf(file, "%lf %lf", &x, &y) != EOF) {
-		Data *newPoint = malloc(sizeof(Data));
+		Data newPoint;
 
-		if(newPoint==NULL) {
-			fprintf(stderr, "Failed to allocate memory\n");
-			exit(MALLOC_ERROR);
-		}
+		newPoint.Num = i;
+		newPoint.xval = x;
+		newPoint.yval = y;
 
-		newPoint->Num = i;
-		newPoint->xval = x;
-		newPoint->yval = y;
-
-		PushToDArray(DArrayPtr, newPoint);
+		PushToDArray(DArrayPtr, &newPoint);
 
 		i++;
 	}
