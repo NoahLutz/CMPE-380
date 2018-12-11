@@ -1,4 +1,5 @@
 /********************************************************************
+ * 
  * Applied Programming:															
  *	 Solution of Overdetermined System of Equations Ax=b arising	
  *	 in least square problems via QR factorizations using the GSL																 *																						
@@ -118,6 +119,7 @@ int main(int argc, char *argv[]) {
 		//gsl_vector_set(x_ls, 0, 1000);
 		double normofResiduals = normOfResiduals(points.EntriesUsed, order, &points, x_ls);
 		double rsquared = RSquareError(points.EntriesUsed, order, &points, x_ls);
+		double pearsons = pearson_correl(points.EntriesUsed, order, &points, x_ls);
 
 		printf("Least Squares Solution via Norm factorization\n");
 		printf("f(x)= ");
@@ -136,8 +138,9 @@ int main(int argc, char *argv[]) {
 		putchar('\n');
 		putchar('\n');
 
-		printf("Norm of Residuals Error = %7.4f\n", normofResiduals);
-		printf("R^2 = %7.6f\n", rsquared);
+		printf("Norm of Residuals Error = %f\n", normofResiduals);
+		printf("R^2 = %f\n", rsquared);
+		printf("Pearson Correlation = %f\n", pearsons);
 	}
 
 
@@ -198,42 +201,48 @@ void Norm_FindPoint(int nr, int nc, const DArray *points, gsl_vector *x_ls, int 
 	}
 
 	if(verbose) {
-		printf("A=\n");
+		printf("\nA(%d x %d)\n", nr, nc);
 		if(nr<=4) {
 			for(int i = 0; i<nr; i++) {
+				printf("%d: ", i);
 				for(int j = 0; j<nc; j++) {
-					printf("%8f", gsl_matrix_get(A, i,j));
+					printf("%f ", gsl_matrix_get(A, i,j));
 				}
 				putchar('\n');
 			}
 		}
 		else {
 			for(int i = 0; i<2; i++) {
+				printf("%d: ", i);
 				for(int j = 0; j<nc; j++) {
-					printf("%8f", gsl_matrix_get(A,i,j));
+					printf("%f ", gsl_matrix_get(A,i,j));
 				}
+				putchar('\n');
 			}
 			printf("\n.........\n");
 			for(int i = nr-2; i<nr; i++) {
+				printf("%d: ", i);
 				for(int j = 0; j<nc; j++) {
-					printf("%8f", gsl_matrix_get(A,i,j));
+					printf("%f ", gsl_matrix_get(A,i,j));
 				}
+				putchar('\n');
 			}
+			putchar('\n');
 		}
 
-		printf("b=\n");
+		printf("\nb(%d x 1)\n", nr);
 		if(nr<=4) {
 			for(int i = 0; i<nr; i++) {
-				printf("%8f\n", gsl_vector_get(b, i));
+				printf("%d: %f\n",i, gsl_vector_get(b, i));
 			}
 		}
 		else {
 			for(int i = 0; i<2; i++){
-				printf("%8f\n", gsl_vector_get(b, i));
+				printf("%d: %f\n", i, gsl_vector_get(b, i));
 			}
 			printf(".........\n");
 			for(int i = nr-2; i<nr; i++){
-				printf("%8f\n", gsl_vector_get(b, i));
+				printf("%d: %f\n", i, gsl_vector_get(b, i));
 			}
 		}
 	}
@@ -241,14 +250,42 @@ void Norm_FindPoint(int nr, int nc, const DArray *points, gsl_vector *x_ls, int 
 	/* Transpose A matrix */
 	gsl_matrix_transpose_memcpy(AT, A);
 
+	if(verbose) {
+		printf("\nAT(%d x %d)\n", nc, nr);
+
+		if(nr<=2) {
+			for(int i = 0; i<nc; i++) {
+				printf("%d: ", i);
+				for(int j = 0; j<nc; j++) {
+					printf("%f ", gsl_matrix_get(AT, i,j));
+				}
+				putchar('\n');
+			}
+			putchar('\n');
+		}
+		else {
+			for(int i = 0; i<nc; i++){
+				printf("%d: ", i);
+				for(int j = 0; j<2; j++) {
+					printf("%f ", gsl_matrix_get(AT, i,j));
+				}
+				printf(".....\n");
+			}
+			putchar('\n');
+		}
+					
+	}
+
+
 	/* Calculate ATA */
 	gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, AT, A, 0.0, ATA);
 	
 	if(verbose) {
-		printf("ATA=\n");
+		printf("ATA(%d x %d)\n", nc, nc);
 		for(int i = 0; i<nc; i++) {
+			printf("%d: ", i);
 			for(int j = 0; j<nc; j++) {
-				printf("%7.2lf", gsl_matrix_get(ATA, i,j));
+				printf("%f ", gsl_matrix_get(ATA, i,j));
 			}
 			putchar('\n');
 		}
@@ -258,10 +295,11 @@ void Norm_FindPoint(int nr, int nc, const DArray *points, gsl_vector *x_ls, int 
 	gsl_blas_dgemv(CblasNoTrans, 1.0, AT, b, 0.0, ATB);
 	
 	if(verbose) {
-		printf("ATb=\n");
+		printf("\nATb(%d x 1)\n", nc);
 		for(int i = 0; i<nc; i++) {
-			printf("%7.4lf\n", gsl_vector_get(ATB, i));
+			printf("%d: %f\n", i, gsl_vector_get(ATB, i));
 		}
+		putchar('\n');
 	}
 
 	/* Solve for x */
@@ -271,8 +309,9 @@ void Norm_FindPoint(int nr, int nc, const DArray *points, gsl_vector *x_ls, int 
 	if(verbose) {
 		printf("x_ls=\n");
 		for(int i = 0; i<nc; i++) {
-			printf("%7.4lf\n", gsl_vector_get(x_ls, i));
+			printf("x_ls[%d] = %f\n", i, gsl_vector_get(x_ls, i));
 		}
+		putchar('\n');
 	}
  
 	/* Free memory  */
@@ -336,7 +375,6 @@ double RSquareError(int nr, int nc, const DArray *points, const gsl_vector *x_ls
 	double u = 0;
 	double numerator = 0;
 	double denom = 0;
-	printf("denom=%f\n", denom);
 	/* Calculate u */
 	for(int i = 0; i<nr; i++) {
 		u+=points->Payload[i].yval;
@@ -376,37 +414,33 @@ double RSquareError(int nr, int nc, const DArray *points, const gsl_vector *x_ls
 double pearson_correl(int nr, int nc, const DArray *points, const gsl_vector *x_ls) {
 	double numerator = 0;
 	double denom = 0;
-	double term1,term2, term3, term4, term5, term6, term7;
+	double term1,term2, term3, term4, term5, term6, term7, denom1, denom2;
 
 	/* Calculate terms */
 	term1 = 0;
 	term2 = 0;
 	term3 = 0;
+	term4 = 0;
 	term5 = 0;
+	term6 = 0;
 	term7 = 0;
 	for(int i = 0; i<nr; i++) {
 		term1 += (points->Payload[i].yval * evalPoly(nc, points->Payload[i].xval, x_ls));
 		term2 += points->Payload[i].yval;
-		term3 += evalPoly(nc, points->Paylod[i].xval, x_ls);
-		term5 += (points->Payload[i].yval * points->Payload[i].yval);
-		term7 += (points->Payload[i].xval * points->Payload[i].xval);
+		term3 += evalPoly(nc, points->Payload[i].xval, x_ls);
+		term4 += (points->Payload[i].yval * points->Payload[i].yval);
+		term5 += (points->Payload[i].yval);
+		term6 += (evalPoly(nc,points->Payload[i].xval,x_ls) * evalPoly(nc, points->Payload[i].xval, x_ls));
+		term7 += evalPoly(nc, points->Payload[i].xval, x_ls);
 	}
 	term1 = term1*nr;
+	
+	denom1 = (nr*term4) - (term5 * term5);
+	denom2 = (nr*term6) - (term7 * term7);
 
-	/* Calculate terms 4 and 6 */
-	term4 = 0;
-	term6 = 0;
-	for(int i = 0; i<nr; i++) {
-		double temp = 0;
-		term4+= (points->Payload[i].yval * points->Payload[i].yval) - (term5);
-		temp = evalPoly(nc, points->Payload[i].xval, x_ls);
-		term6+= (temp * temp) - term7;
-	}
-	term4 = term4 * nr;
-	term6 = term6 * nr;
 
 	numerator = term1 - (term2 * term3);
-	denom = sqrt(term4 * term6);
+	denom = sqrt(denom1 * denom2);
 
 	return numerator/denom;
 

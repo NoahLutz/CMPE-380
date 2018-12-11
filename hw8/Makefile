@@ -13,10 +13,11 @@ VERBOSE=
 
 #Dependencies for binaries
 HW8_DEPS=hw8.c DynamicArrays.h DynamicArrays.c ClassErrors.h
+CORRECTION_DEPS=correction.c
 
 #Clean files
 OUTFILES=out.txt mem.txt
-BINARIES=hw8
+BINARIES=hw8 correction
 
 .PHONY: clean
 all: $(BINARIES)
@@ -24,6 +25,8 @@ all: $(BINARIES)
 hw8: $(HW8_DEPS)
 	$(CC) $(CFLAGS) $(CFLAGS_GSL) $(HW8_DEPS) -o hw8
 
+correction: $(CORRECTION_DEPS)
+	$(CC) $(CFLAGS) $(CORRECTION_DEPS) -o correction
 
 .PHONY: test
 test: hw8

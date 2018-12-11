@@ -1,0 +1,85 @@
+The first step in this lab was to write GSL data fitting code to generate
+the error polynomials. This was done by parsing the data and forming
+matricies and using QR factorization to find the model for the error
+polynomial. Once this was completed, the best polynomial had to be chosen
+based upon the different error statistics shown by the detError binary.
+
+I implemented all the different polynomials in corrections.c using marcos
+to make it easy to compare their effects on the error. It should be noted
+that I decided to stop after the 6th order polynomial as the 7th and 8th
+order polynomials had very low R^2 and Pearson correlation values.
+
+Base error:
+
+[noah@wallace hw8]$ ./realDevice | ./detError
+Max/Min/Ave/Mid Percent Error = 22.22% / 2.07% / -15.50% / 16.03%
+Max/Min/Ave count error    = 416 / 18 / -278
+Norm of residuals error  = 18842.26
+R squared error          = 0.93914191
+Pearson's Correlation    = 0.99810768
+
+Order 1 error polynomial correction:
+f(x)= 9.019905e+01 + 8.102579e-02x
+
+Max/Min/Ave/Mid Percent Error = 8.16% / 0.00% / -5.25% / 6.20%
+Max/Min/Ave count error    = 258 / 0 / -81
+Norm of residuals error  = 6634.41
+R squared error          = 0.99106557
+Pearson's Correlation    = 0.99810562
+
+Order 2 error polynomial correction:
+f(x)= -4.699772e+01 + 2.560093e-01x + -3.893806e-05x^2
+
+Max/Min/Ave/Mid Percent Error = 8.25% / 0.00% / 3.30% / 2.07%
+Max/Min/Ave count error    = 308 / 0 / 42
+Norm of residuals error  = 3953.48
+R squared error          = 0.99683367
+Pearson's Correlation    = 0.99911478
+
+Order 3 error polynomial correction:
+f(x)= 3.701614e+01 + 4.998119e-02x + 7.515106e-05x^2 + -1.723046e-08x^3
+
+Max/Min/Ave/Mid Percent Error = 11.11% / 0.00% / -2.93% / 0.78%
+Max/Min/Ave count error    = 202 / 0 / -33
+Norm of residuals error  = 3309.54
+R squared error          = 0.99778236
+Pearson's Correlation    = 0.99932413
+
+Order 4 error polynomial correction:
+f(x)= 8.103289e+01 + 1.040951e-02x + 5.918942e-05x^2 + -1.015584e-09x^3 
+		+ -2.623831e-12x^4
+
+Max/Min/Ave/Mid Percent Error = 13.46% / 0.00% / -5.36% / 2.76%
+Max/Min/Ave count error    = 177 / 0 / -70
+Norm of residuals error  = 5095.50
+R squared error          = 0.99478410
+Pearson's Correlation    = 0.99931101
+
+Order 5 error polynomial correction:
+f(x)= -5.829405e+01 + 3.001885e-01x + -4.506462e-05x^2 + -5.160318e-08x^3
+		 + 2.917955e-11x^4 + -4.154367e-15x^5
+
+Max/Min/Ave/Mid Percent Error = 58.02% / 0.00% / -1.09% / 0.37%
+Max/Min/Ave count error    = 210 / 0 / -1
+Norm of residuals error  = 2364.72
+R squared error          = 0.99886395
+Pearson's Correlation    = 0.99943657
+
+Order 6 error polynomial correction:
+f(x)= -1.529549e+02 + 4.277614e-01x + -4.829757e-05x^2 + -9.280652e-08x^3 
+		+ 4.199799e-11x^4 + -4.345028e-15x^5 + -1.980393e-19x^6
+
+Max/Min/Ave/Mid Percent Error = 159.26% / 0.00% / -3.98% / 0.64%
+Max/Min/Ave count error    = 206 / 0 / -6
+Norm of residuals error  = 2804.67
+R squared error          = 0.99837666
+Pearson's Correlation    = 0.99926529
+
+
+Given this data and with the goal of minimizing mid-band error, I decided
+to go with the 5th order polynomial as the mid percent error was only
+0.37% and it had the smallest average error. It has a bigger max error
+than some of the lower order polynomials, but as minimizing mid-band
+error was the focus, I think its ok. 
+
+
